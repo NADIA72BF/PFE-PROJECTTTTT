@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GI Immobilier — Vérification Email</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, #fff4f7 0%, #fff9fb 100%);
+    }
+
+    .verify-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .verify-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 48px 40px 40px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 8px 40px rgba(139,26,47,.10);
+      text-align: center;
+    }
+
+    /* ── State icon ── */
+    .state-icon {
+      font-size: 56px;
+      line-height: 1;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .state-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 10px;
+    }
+
+    .state-sub {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0 0 28px;
+      line-height: 1.6;
+    }
+
+    /* ── Spinner ── */
+    .spinner-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 12px 0 28px;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid #ead8df;
+      border-top-color: #8B1A2F;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Countdown ── */
+    .countdown {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #8B1A2F, #b02440);
+      color: #fff;
+      text-decoration: none;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 28px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity .2s;
+      margin-bottom: 12px;
+      font-family: inherit;
+    }
+    .btn-primary:hover { opacity: .88; }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #f5edf0;
+      color: #2a1219;
+      text-decoration: none;
+      border: 1.5px solid #ead8df;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background .2s;
+      font-family: inherit;
+    }
+    .btn-secondary:hover { background: #ead8df; }
+
+    /* ── Resend form ── */
+    .resend-form {
+      margin-top: 20px;
+      text-align: left;
+    }
+    .resend-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .resend-input {
+      width: 100%;
+      height: 44px;
+      border: 1.5px solid #ead8df;
+      border-radius: 10px;
+      padding: 0 12px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #2a1219;
+      background: #fff;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .resend-input:focus { border-color: #8B1A2F; }
+
+    /* ── Inline messages ── */
+    .msg {
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 14px;
+      display: none;
+      text-align: left;
+    }
+    .msg.show   { display: block; }
+    .msg.error   { background: #fee4e2; border-left: 4px solid #b42318; color: #b42318; }
+    .msg.success { background: #d1fadf; border-left: 4px solid #067647; color: #067647; }
+
+    @media (max-width: 480px) {
+      .verify-card { padding: 36px 24px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <h1 class="nav-logo">GI Immobilier</h1>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Accueil</a>
+      <a href="annonces.html" class="nav-link">Annonces</a>
+    </div>
+  </nav>
+
+  <div class="verify-wrapper">
+    <div class="verify-card">
+
+      <!-- Loading state -->
+      <div id="state-loading">
+        <span class="state-icon">📧</span>
+        <h2 class="state-title">Vérification en cours…</h2>
+        <p class="state-sub">Veuillez patienter pendant la vérification de votre email.</p>
+        <div class="spinner-wrap"><div class="spinner"></div></div>
+      </div>
+
+      <!-- Success state -->
+      <div id="state-success" style="display:none">
+        <span class="state-icon">✅</span>
+        <h2 class="state-title">Email vérifié avec succès !</h2>
+        <p class="state-sub">Votre compte GI Immobilier est maintenant actif. Vous pouvez vous connecter.</p>
+        <p class="countdown" id="countdown">Redirection dans <strong>3</strong> secondes…</p>
+        <a href="login.html" class="btn-primary">🔑 Se connecter maintenant</a>
+      </div>
+
+      <!-- Already verified state -->
+      <div id="state-already" style="display:none">
+        <span class="state-icon">✔️</span>
+        <h2 class="state-title">Email déjà vérifié</h2>
+        <p class="state-sub">Votre adresse email est déjà confirmée. Vous pouvez vous connecter directement.</p>
+        <a href="login.html" class="btn-primary">🔑 Se connecter</a>
+      </div>
+
+      <!-- Error state -->
+      <div id="state-error" style="display:none">
+        <span class="state-icon">❌</span>
+        <h2 class="state-title">Lien invalide ou expiré</h2>
+        <p class="state-sub" id="error-detail">Ce lien de vérification n'est plus valide. Demandez un nouvel email de vérification.</p>
+
+        <div class="resend-form">
+          <div class="msg error" id="resend-error"></div>
+          <div class="msg success" id="resend-success"></div>
+          <label class="resend-label" for="resend-email">Votre adresse email</label>
+          <input id="resend-email" class="resend-input" type="email" placeholder="email@exemple.com">
+          <button class="btn-primary" id="resend-btn" onclick="resendVerification()">
+            📧 Renvoyer l'email de vérification
+          </button>
+        </div>
+
+        <a href="index.html" class="btn-secondary">← Retour à l'accueil</a>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer" style="margin-top:0">
+    <div>
+      <span class="footer-logo">GI Immobilier</span>
+      <p style="font-size:12px;color:var(--gray-400);margin-top:8px">La meilleure plateforme immobilière de Tunisie</p>
+    </div>
+  </footer>
+
+  <script>
+    function showState(id) {
+      ['state-loading','state-success','state-already','state-error'].forEach(s => {
+        document.getElementById(s).style.display = s === id ? 'block' : 'none';
+      });
+    }
+
+    function startCountdown() {
+      let secs = 3;
+      const el = document.querySelector('#countdown strong');
+      const iv = setInterval(() => {
+        secs--;
+        if (el) el.textContent = secs;
+        if (secs <= 0) { clearInterval(iv); window.location.href = 'login.html'; }
+      }, 1000);
+    }
+
+    async function resendVerification() {
+      const emailInput = document.getElementById('resend-email');
+      const errDiv = document.getElementById('resend-error');
+      const okDiv  = document.getElementById('resend-success');
+      const btn    = document.getElementById('resend-btn');
+
+      errDiv.classList.remove('show');
+      okDiv.classList.remove('show');
+
+      const email = emailInput.value.trim();
+      if (!email) {
+        errDiv.textContent = 'Veuillez entrer votre adresse email.';
+        errDiv.classList.add('show');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Envoi en cours…';
+
+      try {
+        const resp = await fetch('/api/auth/resend-verification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email })
+        });
+        const data = await resp.json();
+
+        if (resp.ok && data.success) {
+          okDiv.textContent = '✓ Email de vérification envoyé ! Vérifiez votre boîte mail.';
+          okDiv.classList.add('show');
+          emailInput.value = '';
+        } else {
+          errDiv.textContent = data.error || 'Erreur lors de l\'envoi.';
+          errDiv.classList.add('show');
+        }
+      } catch {
+        errDiv.textContent = 'Erreur réseau. Veuillez réessayer.';
+        errDiv.classList.add('show');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📧 Renvoyer l\'email de vérification';
+      }
+    }
+
+    (async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const token  = params.get('token');
+      const email  = params.get('email');
+
+      if (!token || !email) {
+        document.getElementById('error-detail').textContent = 'Lien de vérification manquant ou incorrect.';
+        document.getElementById('resend-email').value = email || '';
+        showState('state-error');
+        return;
+      }
+
+      // Pre-fill email in resend form
+      document.getElementById('resend-email').value = email;
+
+      try {
+        const resp = await fetch(
+          `/api/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`,
+          { credentials: 'include' }
+        );
+        const data = await resp.json();
+
+        if (resp.ok && data.success) {
+          if (data.alreadyVerified) {
+            showState('state-already');
+          } else {
+            showState('state-success');
+            startCountdown();
+          }
+        } else {
+          document.getElementById('error-detail').textContent = data.error || 'Lien invalide ou expiré.';
+          showState('state-error');
+        }
+      } catch {
+        document.getElementById('error-detail').textContent = 'Erreur réseau. Veuillez réessayer.';
+        showState('state-error');
+      }
+    })();
+  </script>
+
+</body>
+</html>

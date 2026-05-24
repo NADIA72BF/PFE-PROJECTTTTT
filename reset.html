@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GI Immobilier — Réinitialisation du mot de passe</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .reset-wrapper {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+    .reset-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 36px 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.10);
+    }
+    .reset-card h2 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .reset-card p.subtitle {
+      margin: 0 0 24px;
+      font-size: 14px;
+      color: #64748b;
+    }
+    .msg-box {
+      display: none;
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 18px;
+    }
+    .msg-box.error   { background:#fce4ec; border-left:4px solid #ea4335; color:#c62828; }
+    .msg-box.success { background:#e8f5e9; border-left:4px solid #34a853; color:#2e7d32; }
+    .reset-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #8B1A2F, #b02440);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 13px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity .2s;
+    }
+    .reset-btn:disabled { opacity: .65; cursor: not-allowed; }
+    .back-link {
+      display: inline-block;
+      margin-top: 18px;
+      font-size: 14px;
+      color: #8B1A2F;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <h1 class="nav-logo">GI Immobilier</h1>
+    <div class="nav-links">
+      <a href="index.html"    class="nav-link">Accueil</a>
+      <a href="annonces.html" class="nav-link">Annonces</a>
+    </div>
+  </nav>
+
+  <main class="reset-wrapper">
+    <div class="reset-card">
+
+      <!-- Invalid link view -->
+      <div id="view-invalid">
+        <h2>Lien invalide</h2>
+        <p class="subtitle">Ce lien de réinitialisation est manquant ou incorrect.</p>
+        <a href="login.html" class="back-link">← Retour à la connexion</a>
+      </div>
+
+      <!-- Reset form view -->
+      <div id="view-form" style="display:none">
+        <h2>Nouveau mot de passe</h2>
+        <p class="subtitle">Choisissez un nouveau mot de passe pour votre compte.</p>
+        <div id="reset-error"   class="msg-box error"></div>
+        <div id="reset-success" class="msg-box success"></div>
+        <form id="reset-form">
+          <div class="form-field">
+            <label class="form-label" for="new-password">Nouveau mot de passe</label>
+            <input id="new-password" class="form-input" type="password" placeholder="••••••••" required minlength="6">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="confirm-password">Confirmer le mot de passe</label>
+            <input id="confirm-password" class="form-input" type="password" placeholder="••••••••" required minlength="6">
+          </div>
+          <button type="submit" id="reset-btn" class="reset-btn">Réinitialiser</button>
+        </form>
+        <a href="login.html" class="back-link">← Retour à la connexion</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer" style="margin-top:40px">
+    <div>
+      <span class="footer-logo">GI Immobilier</span>
+      <p style="font-size:12px;color:var(--gray-400);margin-top:8px">La meilleure plateforme immobilière de Tunisie</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const token  = params.get('token');
+      const email  = params.get('email');
+
+      const viewInvalid = document.getElementById('view-invalid');
+      const viewForm    = document.getElementById('view-form');
+      const errDiv      = document.getElementById('reset-error');
+      const okDiv       = document.getElementById('reset-success');
+      const form        = document.getElementById('reset-form');
+      const resetBtn    = document.getElementById('reset-btn');
+
+      if (!token || !email) {
+        viewInvalid.style.display = 'block';
+        return;
+      }
+
+      // Verify token before showing form
+      (async function verifyToken() {
+        try {
+          const resp = await fetch('/api/auth/verify-reset-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, token })
+          });
+          const data = await resp.json();
+          if (resp.ok && data.valid) {
+            viewInvalid.style.display = 'none';
+            viewForm.style.display    = 'block';
+          } else {
+            viewInvalid.style.display = 'block';
+          }
+        } catch (err) {
+          viewInvalid.style.display = 'block';
+        }
+      })();
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        errDiv.style.display = 'none';
+        okDiv.style.display  = 'none';
+
+        const newPassword     = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        if (newPassword !== confirmPassword) {
+          errDiv.textContent   = 'Les mots de passe ne correspondent pas.';
+          errDiv.style.display = 'block';
+          return;
+        }
+
+        resetBtn.disabled    = true;
+        resetBtn.textContent = 'Réinitialisation…';
+
+        try {
+          const resp = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, token, newPassword, confirmPassword })
+          });
+          const data = await resp.json();
+
+          if (resp.ok && data.success) {
+            form.style.display  = 'none';
+            okDiv.textContent   = 'Mot de passe réinitialisé avec succès ! Redirection en cours…';
+            okDiv.style.display = 'block';
+            setTimeout(function () { window.location.href = 'login.html'; }, 3000);
+          } else {
+            errDiv.textContent   = data.error || 'Lien invalide ou expiré. Veuillez recommencer.';
+            errDiv.style.display = 'block';
+            resetBtn.disabled    = false;
+            resetBtn.textContent = 'Réinitialiser';
+          }
+        } catch (err) {
+          errDiv.textContent   = 'Erreur réseau. Veuillez réessayer.';
+          errDiv.style.display = 'block';
+          resetBtn.disabled    = false;
+          resetBtn.textContent = 'Réinitialiser';
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>

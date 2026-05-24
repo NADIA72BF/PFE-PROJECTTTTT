@@ -1,0 +1,377 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Connectez-vous à votre compte GI Immobilier">
+  <title>GI Immobilier — Connexion</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .error-alert {
+      background-color: #fce4ec;
+      border-left: 4px solid #ea4335;
+      color: #c62828;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      display: none;
+      font-size: 14px;
+      font-weight: 500;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .error-alert.show {
+      display: block;
+    }
+
+    .error-alert::before {
+      content: "⚠ ";
+      margin-right: 8px;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .success-alert {
+      background-color: #e8f5e9;
+      border-left: 4px solid #34a853;
+      color: #2e7d32;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      display: none;
+      font-size: 14px;
+      font-weight: 500;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .success-alert.show {
+      display: block;
+    }
+
+    .success-alert::before {
+      content: "✓ ";
+      margin-right: 8px;
+    }
+
+    .verify-alert {
+      background-color: #fff8e1;
+      border-left: 4px solid #f59e0b;
+      color: #92400e;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      display: none;
+      font-size: 14px;
+      font-weight: 500;
+      animation: slideDown 0.3s ease-out;
+    }
+    .verify-alert.show { display: block; }
+    .resend-btn {
+      margin-top: 10px;
+      width: 100%;
+      background: #f59e0b;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .2s;
+    }
+    .resend-btn:hover { opacity: .85; }
+    .resend-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .loading-spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #1a73e8;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+    }
+
+    .login-btn.loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .login-btn.loading .loading-spinner {
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <h1 class="nav-logo">GI Immobilier</h1>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Accueil</a>
+      <a href="annonces.html" class="nav-link">Annonces</a>
+      <a href="apropos.html" class="nav-link">À propos</a>
+      <a href="contact.html" class="nav-link">Contact</a>
+    </div>
+  </nav>
+
+  <main class="login-wrapper">
+    <div class="login-card">
+      <h2 class="login-title">Bienvenue</h2>
+      <div class="tabs">
+        <button class="tab active">Connexion</button>
+        <button class="tab" onclick="location.href='inscription.html'">Inscription</button>
+      </div>
+
+      <form id="loginForm" class="contact-form" style="padding: 0; max-width: none; background: none; box-shadow: none;">
+        <div id="errorMessage" class="error-alert"></div>
+        <div id="successMessage" class="success-alert"></div>
+        <div id="verifyMessage" class="verify-alert">
+          ⚠️ Email non vérifié. Vérifiez votre boîte mail et cliquez sur le lien d'activation.
+          <br>
+          <button class="resend-btn" id="resendBtn">📧 Renvoyer l'email de vérification</button>
+        </div>
+        
+        <div class="form-field">
+          <label class="form-label" for="email">Email</label>
+          <input id="email" class="form-input" type="email" placeholder="email@exemple.com" required>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="password">Mot de passe</label>
+          <input id="password" class="form-input" type="password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="login-btn">
+          <span class="loading-spinner"></span>
+          Se connecter
+        </button>
+      </form>
+
+      <div class="login-alt">
+        Mot de passe oublié ? <a href="#" id="forgot-link">Réinitialiser</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Forgot-password popup -->
+  <div id="forgot-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:1200;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:14px;padding:32px 36px 28px;width:90%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.22);position:relative">
+      <button id="forgot-close" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:#94a3b8">&times;</button>
+      <h3 style="margin:0 0 6px;font-size:18px;font-weight:700;color:#1e293b">Mot de passe oublié</h3>
+      <p style="margin:0 0 20px;font-size:13px;color:#64748b">Entrez votre email pour recevoir un lien de réinitialisation.</p>
+      <div id="forgot-error"   style="display:none;background:#fce4ec;border-left:4px solid #ea4335;color:#c62828;padding:10px 14px;border-radius:4px;font-size:13px;margin-bottom:14px"></div>
+      <div id="forgot-success" style="display:none;background:#e8f5e9;border-left:4px solid #34a853;color:#2e7d32;padding:10px 14px;border-radius:4px;font-size:13px;margin-bottom:14px"></div>
+      <div class="form-field" style="margin-bottom:16px">
+        <label class="form-label" for="forgot-email">Email</label>
+        <input id="forgot-email" class="form-input" type="email" placeholder="email@exemple.com">
+      </div>
+      <button id="forgot-submit" style="width:100%;background:linear-gradient(135deg,#8B1A2F,#b02440);color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s">
+        Envoyer
+      </button>
+    </div>
+  </div>
+
+  <footer class="footer" style="margin-top: 40px;">
+    <div>
+      <span class="footer-logo">GI Immobilier</span>
+      <p style="font-size: 12px; color: var(--gray-400); margin-top: 8px;">La meilleure plateforme immobilière de Tunisie</p>
+    </div>
+    <nav class="footer-links">
+      <a href="contact.html" class="footer-link">Contact</a>
+      <a href="#" class="footer-link">Conditions d'utilisation</a>
+      <a href="#" class="footer-link">Politique de confidentialité</a>
+    </nav>
+  </footer>
+
+  <script>
+    function getDashboardByRole(role) {
+      const normalized = String(role || '').toLowerCase();
+      if (normalized === 'administrator' || normalized === 'admin') return 'admin_dashboard.html';
+      if (normalized === 'agent') return 'agent_dashboard.html';
+      return 'user_dashboard.html';
+    }
+
+    let _unverifiedEmail = '';
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorMessage = document.getElementById('errorMessage');
+      const successMessage = document.getElementById('successMessage');
+      const verifyMessage = document.getElementById('verifyMessage');
+      const loginBtn = e.target.querySelector('button');
+
+      errorMessage.classList.remove('show');
+      successMessage.classList.remove('show');
+      verifyMessage.classList.remove('show');
+
+      if (!email || !password) {
+        errorMessage.textContent = 'Veuillez remplir tous les champs';
+        errorMessage.classList.add('show');
+        return;
+      }
+
+      try {
+        loginBtn.classList.add('loading');
+        loginBtn.disabled = true;
+
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          successMessage.textContent = 'Connexion réussie ! Redirection en cours...';
+          successMessage.classList.add('show');
+          setTimeout(() => {
+            const roleDashboard = getDashboardByRole(data?.user?.role);
+            const redirect = sessionStorage.getItem('redirectAfterLogin') || roleDashboard;
+            sessionStorage.removeItem('redirectAfterLogin');
+            window.location.href = redirect;
+          }, 1500);
+        } else if (response.status === 403 && data.notVerified) {
+          _unverifiedEmail = data.email || email;
+          verifyMessage.classList.add('show');
+          loginBtn.classList.remove('loading');
+          loginBtn.disabled = false;
+        } else {
+          errorMessage.textContent = data.error || 'Erreur de connexion';
+          errorMessage.classList.add('show');
+          loginBtn.classList.remove('loading');
+          loginBtn.disabled = false;
+        }
+      } catch (error) {
+        errorMessage.textContent = 'Erreur réseau: ' + error.message;
+        errorMessage.classList.add('show');
+        loginBtn.classList.remove('loading');
+        loginBtn.disabled = false;
+      }
+    });
+
+    document.getElementById('resendBtn').addEventListener('click', async function () {
+      const btn = this;
+      const verifyMessage = document.getElementById('verifyMessage');
+      const email = _unverifiedEmail || document.getElementById('email').value;
+      if (!email) return;
+
+      btn.disabled = true;
+      btn.textContent = 'Envoi en cours…';
+
+      try {
+        const resp = await fetch('/api/auth/resend-verification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email })
+        });
+        const data = await resp.json();
+        if (resp.ok && data.success) {
+          verifyMessage.innerHTML = '✅ Email de vérification envoyé ! Vérifiez votre boîte mail.';
+          verifyMessage.style.background = '#d1fadf';
+          verifyMessage.style.borderLeftColor = '#067647';
+          verifyMessage.style.color = '#067647';
+        } else {
+          btn.textContent = data.error || 'Erreur. Réessayez.';
+          setTimeout(() => { btn.textContent = '📧 Renvoyer l\'email de vérification'; btn.disabled = false; }, 3000);
+          return;
+        }
+      } catch {
+        btn.textContent = 'Erreur réseau.';
+        setTimeout(() => { btn.textContent = '📧 Renvoyer l\'email de vérification'; btn.disabled = false; }, 3000);
+      }
+    });
+  </script>
+
+  <script>
+    (function () {
+      const overlay  = document.getElementById('forgot-overlay');
+      const closeBtn = document.getElementById('forgot-close');
+      const submitBtn = document.getElementById('forgot-submit');
+      const errDiv   = document.getElementById('forgot-error');
+      const okDiv    = document.getElementById('forgot-success');
+      const emailIn  = document.getElementById('forgot-email');
+
+      function openPopup()  { overlay.style.display = 'flex'; errDiv.style.display = 'none'; okDiv.style.display = 'none'; emailIn.value = ''; }
+      function closePopup() { overlay.style.display = 'none'; }
+
+      document.getElementById('forgot-link').addEventListener('click', function (e) { e.preventDefault(); openPopup(); });
+      closeBtn.addEventListener('click', closePopup);
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) closePopup(); });
+
+      submitBtn.addEventListener('click', async function () {
+        errDiv.style.display = 'none';
+        okDiv.style.display  = 'none';
+        const email = emailIn.value.trim();
+        if (!email) { errDiv.textContent = 'Veuillez entrer votre email.'; errDiv.style.display = 'block'; return; }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Envoi…';
+
+        try {
+          const resp = await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email })
+          });
+          const data = await resp.json();
+
+          if (resp.ok && data.success) {
+            okDiv.textContent  = 'Un lien de réinitialisation a été envoyé à votre adresse email.';
+            okDiv.style.display = 'block';
+            setTimeout(closePopup, 3000);
+          } else {
+            errDiv.textContent  = data.error || 'Erreur lors de l\'envoi.';
+            errDiv.style.display = 'block';
+          }
+        } catch (err) {
+          errDiv.textContent  = 'Erreur réseau. Veuillez réessayer.';
+          errDiv.style.display = 'block';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Envoyer';
+        }
+      });
+    })();
+  </script>
+
+  <script src="auth-helper.js"></script>
+  <script>
+    // ✅ Mettre à jour le navbar au chargement
+    document.addEventListener("DOMContentLoaded", () => {
+      updateNavbarAuth();
+    });
+  </script>
+
+  <script src="chatbot-widget.js"></script>
+  <!-- Support Nexia - Zoho SalesIQ -->
+  <script>window.$zoho=window.$zoho||{};$zoho.salesiq=$zoho.salesiq||{};$zoho.salesiq.ready=function(){$zoho.salesiq.floatbutton.visible("hide");};</script>
+  <script id="zsiqscript" src="https://salesiq.zohopublic.com/widget?wc=siq7e6f4b3b04408babc690c715e93d1898836ede5e7367d466e1f3f373feffe0b9" defer></script>
+  <style>#gi-help-btn{position:fixed;bottom:24px;left:24px;z-index:9998;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-family:"Segoe UI",Tahoma,sans-serif;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,.4);display:flex;align-items:center;gap:8px;transition:transform .2s,box-shadow .2s}#gi-help-btn:hover{transform:scale(1.05);box-shadow:0 6px 28px rgba(124,58,237,.55)}</style>
+  <button id="gi-help-btn" onclick="if(window.$zoho&amp;&amp;$zoho.salesiq&amp;&amp;$zoho.salesiq.floatwindow){$zoho.salesiq.floatwindow.visible('show');}else if(window.$zoho&amp;&amp;$zoho.salesiq){$zoho.salesiq.floatbutton.visible('show');}">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    J'ai besoin d'aide
+  </button>
+</body>
+</html>

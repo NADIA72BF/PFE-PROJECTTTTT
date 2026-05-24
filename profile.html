@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GI Immobilier — Mon Profil</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root {
+      --primary: #8B1A2F;
+      --primary-dark: #6b1424;
+      --primary-light: #b02440;
+      --surface: #ffffff;
+      --border: #ead8df;
+      --text: #2a1219;
+      --muted: #7a5d68;
+      --success: #067647;
+      --success-soft: #d1fadf;
+      --danger: #b42318;
+      --danger-soft: #fee4e2;
+      --shadow: 0 4px 24px rgba(139, 26, 47, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #fff4f7 0%, #fff9fb 100%);
+      min-height: 100vh;
+    }
+
+    /* ── Page wrapper ── */
+    .profile-page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 16px 60px;
+    }
+
+    /* ── Back / dashboard button ── */
+    .back-bar {
+      margin-bottom: 20px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: rgba(139,26,47,.07);
+      border: 1px solid rgba(139,26,47,.15);
+      transition: background .2s;
+    }
+    .back-btn:hover { background: rgba(139,26,47,.14); }
+
+    /* ── Profile header card ── */
+    .profile-header {
+      background: linear-gradient(135deg, #8B1A2F 0%, #b02440 100%);
+      border-radius: 20px;
+      padding: 36px 32px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      color: #fff;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(139,26,47,.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .profile-header::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 160px; height: 160px;
+      background: rgba(255,255,255,.06);
+      border-radius: 50%;
+    }
+
+    .avatar-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.2);
+      border: 3px solid rgba(255,255,255,.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+      letter-spacing: .02em;
+    }
+    .avatar-skeleton {
+      background: rgba(255,255,255,.2);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    .header-info { flex: 1; min-width: 0; }
+    .header-name {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .header-name-skeleton {
+      height: 22px; width: 160px; border-radius: 6px;
+      background: rgba(255,255,255,.2);
+      animation: pulse 1.4s ease-in-out infinite;
+      margin-bottom: 6px;
+    }
+    .role-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(255,255,255,.2);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.35);
+      margin-bottom: 8px;
+    }
+    .member-since {
+      font-size: 12px;
+      color: rgba(255,255,255,.75);
+      margin: 0;
+    }
+
+    /* ── Info cards grid ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .info-card-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .info-card-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      word-break: break-all;
+    }
+    .info-card-value.skeleton {
+      height: 18px; width: 120px; border-radius: 5px;
+      background: #ead8df;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    /* ── Activity stats ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 12px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-number {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* ── Edit panel ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .edit-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #8B1A2F, #b02440);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s;
+      margin-bottom: 24px;
+    }
+    .edit-btn:hover { opacity: .88; }
+    .edit-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .form-field { display: flex; flex-direction: column; gap: 5px; }
+    .form-field.full { grid-column: 1 / -1; }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .form-input {
+      height: 42px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0 12px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: #fff;
+      transition: border-color .2s;
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--primary); }
+    .form-input[readonly] {
+      background: #fdf5f7;
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .divider {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 6px 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .form-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #8B1A2F, #b02440);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity .2s;
+    }
+    .btn-save:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-save:hover:not(:disabled) { opacity: .9; }
+
+    .btn-cancel {
+      background: #f5edf0;
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-cancel:hover { background: #ead8df; }
+
+    /* ── Inline messages ── */
+    .msg {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg.show { display: block; }
+    .msg.error   { background: var(--danger-soft); border-left: 4px solid var(--danger); color: var(--danger); }
+    .msg.success { background: var(--success-soft); border-left: 4px solid var(--success); color: var(--success); }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #1a3a2a;
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,.25);
+      z-index: 9999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform .3s ease, opacity .3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+    .saving .spinner { display: block; }
+
+    @keyframes spin  { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+
+    @media (max-width: 680px) {
+      .profile-header { flex-direction: column; text-align: center; gap: 16px; padding: 28px 20px; }
+      .info-grid      { grid-template-columns: 1fr; }
+      .stats-row      { grid-template-columns: 1fr 1fr; }
+      .form-grid      { grid-template-columns: 1fr; }
+      .form-field.full { grid-column: 1; }
+      .divider        { grid-column: 1; }
+      .form-actions   { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <h1 class="nav-logo">GI Immobilier</h1>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Accueil</a>
+      <a href="annonces.html" class="nav-link">Annonces</a>
+      <a href="apropos.html" class="nav-link">À propos</a>
+      <a href="contact.html" class="nav-link">Contact</a>
+    </div>
+  </nav>
+
+  <div class="profile-page">
+
+    <!-- Back to dashboard -->
+    <div class="back-bar">
+      <a id="dashboard-link" href="#" class="back-btn">← Tableau de bord</a>
+    </div>
+
+    <!-- Profile header -->
+    <div class="profile-header" id="profile-header">
+      <div class="avatar-circle avatar-skeleton" id="avatar">  </div>
+      <div class="header-info">
+        <div class="header-name-skeleton" id="header-name-skeleton"></div>
+        <p class="header-name" id="header-name" style="display:none"></p>
+        <span class="role-badge" id="role-badge"></span>
+        <p class="member-since" id="member-since"></p>
+      </div>
+    </div>
+
+    <!-- Info cards -->
+    <div class="info-grid" id="view-cards">
+      <div class="info-card">
+        <span class="info-card-label">👤 Nom complet</span>
+        <span class="info-card-value skeleton" id="v-name"></span>
+      </div>
+      <div class="info-card">
+        <span class="info-card-label">📧 Email</span>
+        <span class="info-card-value skeleton" id="v-email"></span>
+      </div>
+      <div class="info-card">
+        <span class="info-card-label">📞 Téléphone</span>
+        <span class="info-card-value skeleton" id="v-phone"></span>
+      </div>
+      <div class="info-card">
+        <span class="info-card-label">🔑 Rôle</span>
+        <span class="info-card-value skeleton" id="v-role"></span>
+      </div>
+    </div>
+
+    <!-- Activity stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number" id="stat-props">—</div>
+        <div class="stat-label">🏠 Biens</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-contracts">—</div>
+        <div class="stat-label">📋 Contrats</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-reserv">—</div>
+        <div class="stat-label">📅 Réservations</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-payments">—</div>
+        <div class="stat-label">💰 Paiements</div>
+      </div>
+    </div>
+
+    <!-- Edit toggle button -->
+    <button class="edit-btn" id="edit-toggle-btn" onclick="openEdit()">✏️ Modifier mon profil</button>
+
+    <!-- Edit panel (hidden by default) -->
+    <div class="panel" id="edit-panel" style="display:none">
+      <p class="panel-title">✏️ Modifier mon profil</p>
+
+      <div class="msg error"   id="edit-error"></div>
+      <div class="msg success" id="edit-success"></div>
+
+      <form id="edit-form">
+        <div class="form-grid">
+
+          <div class="form-field">
+            <label class="form-label" for="f-first">Prénom</label>
+            <input id="f-first" class="form-input" type="text" required>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="f-last">Nom</label>
+            <input id="f-last" class="form-input" type="text" required>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="f-email">Email</label>
+            <input id="f-email" class="form-input" type="email" required>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="f-phone">Téléphone</label>
+            <input id="f-phone" class="form-input" type="tel" placeholder="+216 XX XXX XXX">
+          </div>
+
+          <div class="form-field full">
+            <label class="form-label">Rôle</label>
+            <input class="form-input" type="text" id="f-role" readonly>
+          </div>
+
+          <div class="divider">Changer le mot de passe (optionnel)</div>
+
+          <div class="form-field">
+            <label class="form-label" for="f-pwd">Nouveau mot de passe</label>
+            <input id="f-pwd" class="form-input" type="password" placeholder="8 caractères minimum" minlength="8">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="f-pwd2">Confirmer le mot de passe</label>
+            <input id="f-pwd2" class="form-input" type="password" placeholder="Répéter le mot de passe">
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-save" id="save-btn">
+              <span class="spinner"></span>
+              💾 Enregistrer
+            </button>
+            <button type="button" class="btn-cancel" onclick="closeEdit()">✖ Annuler</button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Success toast -->
+  <div class="toast" id="toast">✅ Profil mis à jour avec succès !</div>
+
+  <script src="auth-helper.js"></script>
+  <script>
+    let currentProfile = null;
+
+    const roleLabels = {
+      'administrator': 'Administrateur',
+      'admin':         'Administrateur',
+      'agent':         'Agent',
+      'user':          'Utilisateur'
+    };
+
+    const roleColors = {
+      'administrator': '#dc2626',
+      'admin':         '#dc2626',
+      'agent':         '#2563eb',
+      'user':          '#16a34a'
+    };
+
+    function getInitials(name) {
+      return String(name || '?').trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    function normVal(v) {
+      if (v == null) return '';
+      if (typeof v === 'object' && v.display_value) return String(v.display_value);
+      if (typeof v === 'object' && v.first_name)    return `${v.first_name} ${v.last_name || ''}`.trim();
+      return String(v);
+    }
+
+    function mapProfile(raw) {
+      const full = normVal(raw.full_name || raw.Full_Name || raw.Name || raw.name || '');
+      const parts = full.trim().split(/\s+/);
+      let firstName = '', lastName = '';
+      if (typeof (raw.full_name || raw.Full_Name) === 'object') {
+        const obj = raw.full_name || raw.Full_Name;
+        firstName = obj.first_name || parts[0] || '';
+        lastName  = obj.last_name  || parts.slice(1).join(' ') || '';
+      } else {
+        firstName = parts[0] || '';
+        lastName  = parts.slice(1).join(' ') || '';
+      }
+      return {
+        id:        normVal(raw.ID1 || raw.ID || raw.User_ID || raw.id),
+        firstName,
+        lastName,
+        fullName:  full || `${firstName} ${lastName}`.trim(),
+        email:     normVal(raw.Email || raw.email),
+        phone:     normVal(raw.Phone_Number || raw.Phone || raw.phone || raw.phone_number),
+        role:      normVal(raw.Role || raw.role),
+        createdAt: normVal(raw.Added_Time || raw.Created_At || raw.created_at || raw.Date_Added || '')
+      };
+    }
+
+    function renderProfile(p) {
+      const roleKey = p.role.toLowerCase();
+      const roleLabel = roleLabels[roleKey] || p.role || 'Utilisateur';
+      const color     = roleColors[roleKey] || '#8B1A2F';
+
+      // Avatar
+      const av = document.getElementById('avatar');
+      av.textContent = getInitials(p.fullName);
+      av.classList.remove('avatar-skeleton');
+      av.style.background = color;
+
+      // Header name
+      document.getElementById('header-name-skeleton').style.display = 'none';
+      const hn = document.getElementById('header-name');
+      hn.textContent = p.fullName || '—';
+      hn.style.display = 'block';
+
+      // Role badge
+      const rb = document.getElementById('role-badge');
+      rb.textContent = roleLabel;
+      rb.style.background = 'rgba(255,255,255,.18)';
+
+      // Member since
+      if (p.createdAt) {
+        const d = new Date(p.createdAt);
+        const formatted = isNaN(d) ? p.createdAt : d.toLocaleDateString('fr-FR', { year:'numeric', month:'long' });
+        document.getElementById('member-since').textContent = `Membre depuis ${formatted}`;
+      }
+
+      // Info cards — remove skeleton class
+      function setCard(id, val) {
+        const el = document.getElementById(id);
+        el.textContent = val || '—';
+        el.classList.remove('skeleton');
+      }
+      setCard('v-name',  p.fullName);
+      setCard('v-email', p.email);
+      setCard('v-phone', p.phone || 'Non renseigné');
+      setCard('v-role',  roleLabel);
+
+      // Edit form
+      document.getElementById('f-first').value = p.firstName;
+      document.getElementById('f-last').value  = p.lastName;
+      document.getElementById('f-email').value = p.email;
+      document.getElementById('f-phone').value = p.phone;
+      document.getElementById('f-role').value  = roleLabel;
+
+      // Dashboard link
+      document.getElementById('dashboard-link').href = getDashboardByRole(p.role);
+    }
+
+    function openEdit() {
+      document.getElementById('edit-panel').style.display = 'block';
+      document.getElementById('edit-toggle-btn').style.display = 'none';
+      document.getElementById('edit-error').classList.remove('show');
+      document.getElementById('edit-success').classList.remove('show');
+      document.getElementById('f-pwd').value  = '';
+      document.getElementById('f-pwd2').value = '';
+      document.getElementById('edit-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function closeEdit() {
+      document.getElementById('edit-panel').style.display = 'none';
+      document.getElementById('edit-toggle-btn').style.display = 'inline-flex';
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = '✅ ' + msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('edit-error');
+      el.textContent = msg;
+      el.classList.add('show');
+      document.getElementById('edit-success').classList.remove('show');
+    }
+
+    async function loadActivityStats() {
+      const endpoints = [
+        { id: 'stat-props',     url: '/api/properties/user' },
+        { id: 'stat-contracts', url: '/api/contracts/user' },
+        { id: 'stat-reserv',    url: '/api/reservations/user' },
+        { id: 'stat-payments',  url: '/api/payments/user' }
+      ];
+
+      endpoints.forEach(async ({ id, url }) => {
+        try {
+          const r = await fetch(url, { credentials: 'include' });
+          const d = await r.json();
+          const arr = d.properties || d.contracts || d.reservations || d.payments || d.data || d;
+          const count = Array.isArray(arr) ? arr.length : (typeof d.count === 'number' ? d.count : '—');
+          document.getElementById(id).textContent = count;
+        } catch {
+          document.getElementById(id).textContent = '—';
+        }
+      });
+    }
+
+    document.getElementById('edit-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const first   = document.getElementById('f-first').value.trim();
+      const last    = document.getElementById('f-last').value.trim();
+      const email   = document.getElementById('f-email').value.trim();
+      const phone   = document.getElementById('f-phone').value.trim();
+      const pwd     = document.getElementById('f-pwd').value;
+      const pwd2    = document.getElementById('f-pwd2').value;
+
+      document.getElementById('edit-error').classList.remove('show');
+      document.getElementById('edit-success').classList.remove('show');
+
+      if (!first || !last || !email) {
+        showError('Prénom, nom et email sont requis.');
+        return;
+      }
+      if (pwd && pwd.length < 8) {
+        showError('Le mot de passe doit contenir au moins 8 caractères.');
+        return;
+      }
+      if (pwd && pwd !== pwd2) {
+        showError('Les mots de passe ne correspondent pas.');
+        return;
+      }
+
+      const saveBtn = document.getElementById('save-btn');
+      saveBtn.disabled = true;
+      saveBtn.classList.add('saving');
+
+      const body = { first_name: first, last_name: last, email, phone_number: phone };
+      if (pwd) { body.password = pwd; body.confirm_password = pwd2; }
+
+      try {
+        const resp = await fetch('/api/agent/profile/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+
+        if (resp.ok && data.success) {
+          // Update displayed values
+          const fullName = `${first} ${last}`.trim();
+          document.getElementById('header-name').textContent = fullName;
+          document.getElementById('avatar').textContent = getInitials(fullName);
+          document.getElementById('v-name').textContent  = fullName;
+          document.getElementById('v-email').textContent = email;
+          document.getElementById('v-phone').textContent = phone || 'Non renseigné';
+          if (currentProfile) {
+            currentProfile.firstName = first;
+            currentProfile.lastName  = last;
+            currentProfile.fullName  = fullName;
+            currentProfile.email     = email;
+            currentProfile.phone     = phone;
+          }
+          closeEdit();
+          showToast('Profil mis à jour avec succès !');
+        } else {
+          showError(data.error || 'Erreur lors de la mise à jour.');
+        }
+      } catch (err) {
+        showError('Erreur réseau. Veuillez réessayer.');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.classList.remove('saving');
+      }
+    });
+
+    (async function init() {
+      // 1. Auth check
+      const auth = await fetch('/api/auth-status', { credentials: 'include' }).then(r => r.json()).catch(() => ({ loggedIn: false }));
+      if (!auth.loggedIn) {
+        sessionStorage.setItem('redirectAfterLogin', 'profile.html');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // 2. Fetch full profile
+      try {
+        const resp = await fetch('/api/agent/profile', { credentials: 'include' });
+        const data = await resp.json();
+        if (!resp.ok || !data.user) throw new Error(data.error || 'Profil introuvable');
+        currentProfile = mapProfile(data.user);
+        renderProfile(currentProfile);
+      } catch (err) {
+        // Show error in header area
+        document.getElementById('header-name-skeleton').style.display = 'none';
+        const hn = document.getElementById('header-name');
+        hn.textContent = 'Erreur de chargement';
+        hn.style.display = 'block';
+        document.getElementById('avatar').textContent = '!';
+        document.getElementById('avatar').classList.remove('avatar-skeleton');
+
+        // Fallback: use auth-status data
+        if (auth.user) {
+          const u = auth.user;
+          const fallback = {
+            id: u.id || '',
+            firstName: u.name?.split?.(' ')[0] || u.name || '',
+            lastName:  u.name?.split?.(' ').slice(1).join(' ') || '',
+            fullName:  typeof u.name === 'string' ? u.name : (u.name?.first_name ? `${u.name.first_name} ${u.name.last_name||''}`.trim() : u.email || ''),
+            email:     u.email || '',
+            phone:     '',
+            role:      u.role || 'User',
+            createdAt: ''
+          };
+          currentProfile = fallback;
+          renderProfile(fallback);
+        }
+      }
+
+      // 3. Activity stats in background
+      loadActivityStats();
+    })();
+  </script>
+
+  <script src="chatbot-widget.js"></script>
+  <style>#gi-help-btn{position:fixed;bottom:24px;left:24px;z-index:9998;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-family:"Segoe UI",Tahoma,sans-serif;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,.4);display:flex;align-items:center;gap:8px;transition:transform .2s,box-shadow .2s}#gi-help-btn:hover{transform:scale(1.05);box-shadow:0 6px 28px rgba(124,58,237,.55)}</style>
+  <button id="gi-help-btn" onclick="if(window.$zoho&&$zoho.salesiq&&$zoho.salesiq.floatwindow){$zoho.salesiq.floatwindow.visible('show');}else if(window.$zoho&&$zoho.salesiq){$zoho.salesiq.floatbutton.visible('show');}">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    J'ai besoin d'aide
+  </button>
+</body>
+</html>

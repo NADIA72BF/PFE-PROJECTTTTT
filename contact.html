@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GI Immo | Contact</title>
+  <style>
+    :root {
+      --sidebar: #2b0f19;
+      --sidebar-text: #fff8fb;
+      --sidebar-muted: #d2bdc6;
+      --surface: #ffffff;
+      --border: #ead8df;
+      --text: #2a1219;
+      --muted: #7a5d68;
+      --accent: #8f1d3a;
+      --accent-2: #d14b5e;
+      --shadow: 0 20px 50px rgba(42, 18, 25, 0.1);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top right, rgba(143, 29, 58, 0.15), transparent 26%),
+                  linear-gradient(180deg, #fff4f7 0%, #fff9fb 100%);
+      min-height: 100vh;
+    }
+
+    .top-nav {
+      background: linear-gradient(180deg, #3a131f 0%, #2b0f19 100%);
+      color: var(--sidebar-text);
+      padding: 16px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+    .nav-logo { font-size: 20px; font-weight: 700; margin: 0; }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-link {
+      color: var(--sidebar-text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+    .nav-link:hover { color: var(--accent-2); }
+    #nav-auth { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+    .nav-auth-user { color:rgba(255,255,255,.85); font-size:13px; font-weight:600; }
+    .nav-auth-btn { font-size:13px; font-weight:600; padding:8px 16px; border-radius:8px; text-decoration:none; transition:all .2s; white-space:nowrap; }
+    .nav-auth-btn--login { background:linear-gradient(135deg,#8B1A2F,#a93226); color:#fff; }
+    .nav-auth-btn--signup { color:#fff; border:1.5px solid rgba(255,255,255,.5); background:transparent; }
+    .nav-auth-btn--dashboard { background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.2); }
+    .nav-auth-btn--logout { background:rgba(220,38,38,.15); color:#fca5a5; border:1px solid rgba(220,38,38,.3); }
+    .nav-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .content { padding: 28px; max-width: 1000px; margin: 0 auto; }
+    .hero {
+      background: var(--surface);
+      border: 1px solid rgba(42,18,25,0.08);
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow);
+    }
+    .hero h2 { font-size: 36px; margin: 0 0 12px; }
+    .hero p { font-size: 16px; color: var(--muted); margin: 0; }
+
+    .form-section {
+      background: var(--surface);
+      border: 1px solid rgba(42,18,25,0.08);
+      border-radius: 24px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+    }
+    .form-section h3 { margin: 0 0 20px; font-size: 18px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .form-field { margin-bottom: 20px; }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(143, 29, 58, 0.1);
+    }
+    .form-textarea { resize: vertical; min-height: 120px; }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .btn:hover { transform: translateY(-2px); }
+
+    .contact-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+    }
+    .contact-item {
+      background: #fff3f6;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+    .contact-item-label { font-size: 24px; margin-bottom: 12px; }
+    .contact-item-val { font-size: 16px; font-weight: 600; color: var(--accent); }
+
+    .footer {
+      background: linear-gradient(180deg, #3a131f 0%, #2b0f19 100%);
+      color: var(--sidebar-text);
+      padding: 28px;
+      margin-top: 40px;
+      text-align: center;
+    }
+    .footer-logo { font-size: 16px; font-weight: 700; }
+    .footer-links { display: flex; justify-content: center; gap: 20px; margin-top: 12px; }
+    .footer-link { color: var(--sidebar-muted); text-decoration: none; font-size: 13px; }
+
+    @media (max-width: 768px) {
+      .form-row { grid-template-columns: 1fr; }
+      .content { padding: 16px; }
+      .hero { padding: 24px; }
+      .hero h2 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="top-nav">
+    <h1 class="nav-logo">GI Immobilier</h1>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Accueil</a>
+      <a href="annonces.html" class="nav-link">Annonces</a>
+      <a href="apropos.html" class="nav-link">À propos</a>
+      <a href="contact.html" class="nav-link" style="color:var(--accent-2);font-weight:700;">Contact</a>
+    </div>
+    <a href="login.html" class="nav-btn">Connexion</a>
+  </nav>
+
+  <main class="content">
+    <section class="hero">
+      <h2>Nous Contacter</h2>
+      <p>Nous sommes à votre écoute pour toute question ou demande d'information.</p>
+    </section>
+
+    <section class="form-section">
+      <h3>Envoyez-nous un message</h3>
+      <form id="contactForm">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Nom *</label>
+            <input id="name" class="form-input" type="text" placeholder="Votre nom" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Email *</label>
+            <input id="email" class="form-input" type="email" placeholder="email@example.com" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Téléphone</label>
+          <input id="phone" class="form-input" type="tel" placeholder="+216 XX XXX XXX">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Message *</label>
+          <textarea id="message" class="form-textarea" placeholder="Votre message..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn">Envoyer le message</button>
+      </form>
+    </section>
+
+    <h3 style="text-align:center;margin-bottom:20px;font-size:20px;">Nos Coordonnées</h3>
+    <div class="contact-info">
+      <div class="contact-item">
+        <div class="contact-item-label">📍</div>
+        <div class="contact-item-val">Adresse</div>
+        <p style="color:var(--muted);margin-top:8px;font-size:14px;">Tunis, Tunisie</p>
+      </div>
+      <div class="contact-item">
+        <div class="contact-item-label">📞</div>
+        <div class="contact-item-val">Téléphone</div>
+        <p style="color:var(--muted);margin-top:8px;font-size:14px;">+216 29 905 835</p>
+      </div>
+      <div class="contact-item">
+        <div class="contact-item-label">✉️</div>
+        <div class="contact-item-val">Email</div>
+        <p style="color:var(--muted);margin-top:8px;font-size:14px;">contact@giimmobilier.tn</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span class="footer-logo">GI Immobilier</span>
+    <div class="footer-links">
+      <a href="contact.html" class="footer-link">Contact</a>
+      <a href="#" class="footer-link">CGU</a>
+      <a href="#" class="footer-link">Politique</a>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('contactForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const message = document.getElementById('message').value;
+      alert('Message: Votre message a été envoyé avec succès. Nous vous recontacterons prochainement.');
+      e.target.reset();
+    });
+  </script>
+  <script src="auth-helper.js"></script>
+  <script src="chatbot-widget.js"></script>
+  <!-- Support Nexia - Zoho SalesIQ -->
+  <script>window.$zoho=window.$zoho||{};$zoho.salesiq=$zoho.salesiq||{};$zoho.salesiq.ready=function(){$zoho.salesiq.floatbutton.visible("hide");};</script>
+  <script id="zsiqscript" src="https://salesiq.zohopublic.com/widget?wc=siq7e6f4b3b04408babc690c715e93d1898836ede5e7367d466e1f3f373feffe0b9" defer></script>
+  <style>#gi-help-btn{position:fixed;bottom:24px;left:24px;z-index:9998;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-family:"Segoe UI",Tahoma,sans-serif;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,.4);display:flex;align-items:center;gap:8px;transition:transform .2s,box-shadow .2s}#gi-help-btn:hover{transform:scale(1.05);box-shadow:0 6px 28px rgba(124,58,237,.55)}</style>
+  <button id="gi-help-btn" onclick="if(window.$zoho&amp;&amp;$zoho.salesiq&amp;&amp;$zoho.salesiq.floatwindow){$zoho.salesiq.floatwindow.visible('show');}else if(window.$zoho&amp;&amp;$zoho.salesiq){$zoho.salesiq.floatbutton.visible('show');}">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    J'ai besoin d'aide
+  </button>
+</body>
+</html>

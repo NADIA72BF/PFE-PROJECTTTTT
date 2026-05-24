@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paiement Sécurisé | Nexus</title>
+  <style>
+    :root {
+      --primary: #8B1A2F;
+      --primary-dark: #6a1324;
+      --primary-light: #d14b5e;
+      --surface: #ffffff;
+      --surface-alt: #fff8fa;
+      --border: #ead8df;
+      --text: #2a1219;
+      --muted: #7a5d68;
+      --success: #067647;
+      --success-soft: #d1fadf;
+      --warning: #b54708;
+      --warning-soft: #ffead5;
+      --danger: #b42318;
+      --danger-soft: #fee4e2;
+      --shadow: 0 20px 50px rgba(42, 18, 25, 0.12);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(139, 26, 47, 0.18), transparent 30%),
+        linear-gradient(180deg, #fff4f7 0%, #fff9fb 100%);
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* ── HEADER ── */
+    .page-header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      padding: 0 28px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(139, 26, 47, 0.35);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.15s;
+    }
+    .header-back:hover { color: #fff; }
+    .header-back svg { width: 18px; height: 18px; }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    .header-title span { font-size: 22px; }
+
+    .header-logo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      opacity: 0.85;
+      color: #ffd5de;
+      text-transform: uppercase;
+    }
+
+    /* ── LAYOUT ── */
+    .page-body {
+      max-width: 680px;
+      margin: 36px auto 0;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid rgba(42,18,25,0.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-body { padding: 24px; }
+    .card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff4f7;
+    }
+    .card-header h3 { font-size: 15px; color: var(--primary); font-weight: 700; }
+
+    /* ── SUMMARY CARD ── */
+    .summary-property {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .summary-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .summary-meta span { display: flex; align-items: center; gap: 5px; }
+
+    .amount-block {
+      text-align: center;
+      padding: 20px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+    .amount-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .amount-value {
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .amount-currency { font-size: 20px; font-weight: 600; }
+
+    .summary-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .ref-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #fff0f4;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-container {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .progress-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    /* ── STEP INDICATOR ── */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .step-indicator::before {
+      content: '';
+      position: absolute;
+      top: 16px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .step-indicator-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+      flex: 1;
+    }
+    .step-indicator-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      transition: all 0.2s ease;
+    }
+    .step-indicator-item.completed .step-indicator-circle {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+    .step-indicator-item.active .step-indicator-circle {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 0 0 6px rgba(139, 26, 47, 0.15);
+    }
+    .step-indicator-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+    }
+    .step-indicator-item.active .step-indicator-label {
+      color: var(--primary);
+    }
+
+    /* ── COPY BUTTON ── */
+    .copy-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--primary);
+      font-size: 16px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    .copy-btn:hover {
+      background: rgba(139, 26, 47, 0.08);
+    }
+    .copy-tooltip {
+      position: absolute;
+      bottom: 100%;
+      right: 0;
+      background: var(--primary);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      margin-bottom: 6px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(4px);
+      transition: all 0.15s ease;
+      z-index: 10;
+    }
+    .copy-btn.copied .copy-tooltip {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── SECURITY BADGE ── */
+    .security-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: var(--success-soft);
+      border: 1px solid #a7e8c0;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--success);
+    }
+    .card-logos {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .card-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 32px;
+      background: #f5f5f5;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* ── OFFICE INFO ── */
+    .office-info {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      background: #fdfafa;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .office-info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14px;
+    }
+    .office-info-icon {
+      font-size: 18px;
+      min-width: 24px;
+      text-align: center;
+    }
+    .office-info-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .office-info-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .office-info-value {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* countdown badge */
+    .countdown-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .countdown-badge.green { background: var(--success-soft); color: var(--success); }
+    .countdown-badge.orange { background: var(--warning-soft); color: var(--warning); }
+    .countdown-badge.red { background: var(--danger-soft); color: var(--danger); }
+
+    /* ── METHOD SELECTION ── */
+    .method-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .method-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .method-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 18px 12px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      transition: all 0.18s ease;
+    }
+    .method-btn .method-icon { font-size: 26px; }
+    .method-btn:hover {
+      border-color: var(--primary-light);
+      background: #fff4f7;
+    }
+    .method-btn.selected {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(139,26,47,0.06), rgba(209,75,94,0.06));
+      color: var(--primary);
+    }
+
+    /* ── INSTRUCTIONS PANEL ── */
+    .instructions-grid {
+      display: grid;
+      gap: 10px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #fff8fa;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 13px;
+    }
+    .info-row .info-key { color: var(--muted); font-weight: 500; }
+    .info-row .info-val { font-weight: 700; color: var(--text); }
+    .info-row .info-val.highlight {
+      color: var(--primary);
+      font-family: monospace;
+      font-size: 14px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── FILE UPLOAD ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      background: #fdfafa;
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--primary-light);
+      background: #fff4f7;
+    }
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .upload-icon { font-size: 32px; margin-bottom: 8px; }
+    .upload-text { font-size: 14px; font-weight: 600; color: var(--muted); }
+    .upload-hint { font-size: 12px; color: #b09aa5; margin-top: 4px; }
+
+    .file-preview {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--success-soft);
+      border: 1px solid #a7e8c0;
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+    .file-preview.visible { display: flex; }
+    .file-preview-icon { font-size: 22px; }
+    .file-preview-name { font-size: 13px; font-weight: 600; color: var(--success); flex: 1; word-break: break-all; }
+    .file-preview-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--muted);
+      padding: 0 4px;
+      line-height: 1;
+    }
+    .file-preview-remove:hover { color: var(--danger); }
+
+    /* ── REF TRANSACTION INPUT ── */
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .form-input {
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { outline: none; border-color: var(--primary); }
+
+    /* ── BUTTONS ── */
+    .btn-confirm {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-confirm:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn-confirm:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .btn-online {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #1a6b8b, #2196c9);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-online:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn-online:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .btn-dashboard {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 24px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .btn-dashboard:hover { opacity: 0.9; }
+
+    /* ── STATES ── */
+    .state-panel {
+      text-align: center;
+      padding: 40px 24px;
+    }
+    .state-icon { font-size: 56px; margin-bottom: 16px; }
+    .state-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+    .state-desc { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+
+    .state-ref {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: #fff0f4;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 24px;
+    }
+
+    .paid-info {
+      display: inline-grid;
+      gap: 10px;
+      text-align: left;
+      min-width: 260px;
+      margin-bottom: 24px;
+    }
+    .paid-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 13px;
+      padding: 8px 14px;
+      background: var(--success-soft);
+      border-radius: 10px;
+    }
+    .paid-row .paid-key { color: var(--muted); }
+    .paid-row .paid-val { font-weight: 700; color: var(--success); }
+
+    /* ── LOADING ── */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(42,18,25,0.45);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .loading-overlay.active { display: flex; }
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .loading-text { color: #fff; font-weight: 700; font-size: 15px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── ALERT ── */
+    .alert {
+      padding: 13px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .alert.error { background: var(--danger-soft); color: var(--danger); border: 1px solid #f5b4ae; }
+    .alert.info { background: #fff0f4; color: var(--primary); border: 1px solid var(--border); }
+
+    /* ── TRANSITIONS ── */
+    .method-panel { display: none; animation: fadeIn 0.25s ease; }
+    .method-panel.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .page-header { padding: 0 16px; }
+      .page-body { margin-top: 20px; padding: 0 12px; }
+      .method-grid { grid-template-columns: 1fr; }
+      .amount-value { font-size: 30px; }
+      .summary-footer { flex-direction: column; align-items: flex-start; }
+      .step-indicator { margin-bottom: 20px; }
+      .step-indicator-item { flex: 1; min-width: 0; }
+      .step-indicator-label { font-size: 11px; }
+      .ref-badge { font-size: 11px; }
+      .countdown-badge { font-size: 12px; }
+      .card-logos { gap: 6px; }
+      .card-logo { width: 40px; height: 26px; font-size: 12px; }
+      .info-row { font-size: 12px; }
+      .office-info-row { font-size: 13px; gap: 10px; }
+      .office-info-icon { min-width: 20px; font-size: 16px; }
+      .upload-zone { padding: 20px; }
+      .upload-icon { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="page-header">
+    <a class="header-back" href="user_contracts.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Retour
+    </a>
+    <div class="header-title">
+      <span>💳</span> Paiement Sécurisé
+    </div>
+    <div class="header-logo">Nexus</div>
+  </header>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loadingText">Chargement...</div>
+  </div>
+
+  <main class="page-body" id="mainBody">
+
+    <!-- ERROR STATE -->
+    <div id="errorState" style="display:none;">
+      <div class="card">
+        <div class="card-body state-panel">
+          <div class="state-icon">⚠️</div>
+          <div class="state-title">Erreur de chargement</div>
+          <div class="state-desc" id="errorMsg">Une erreur est survenue.</div>
+          <a href="user_contracts.html" class="btn-dashboard">← Retour aux contrats</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- NO PAYMENT YET STATE -->
+    <div id="noPaymentState" style="display:none;">
+      <div class="card">
+        <div class="card-body state-panel">
+          <div class="state-icon">⏳</div>
+          <div class="state-title" style="color:var(--warning);">Paiement en cours de préparation</div>
+          <div class="state-desc">
+            Votre facture est en cours de génération par notre équipe.<br>
+            Cela peut prendre quelques minutes après la signature du contrat.<br><br>
+            <strong>Contrat :</strong> #<span id="noPayContractId"></span>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn-dashboard" style="background:linear-gradient(135deg,var(--warning),#e07b20);border:none;cursor:pointer;" onclick="location.reload()">
+              🔄 Actualiser
+            </button>
+            <a href="user_contracts.html" class="btn-dashboard" style="background:rgba(42,18,25,0.12);color:var(--text);">
+              ← Retour aux contrats
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALREADY PAID STATE -->
+    <div id="paidState" style="display:none;">
+      <div class="card">
+        <div class="card-body state-panel">
+          <div class="state-icon">✅</div>
+          <div class="state-title" style="color:var(--success);">Paiement déjà effectué</div>
+          <div class="state-desc">Ce paiement a déjà été traité avec succès.</div>
+          <div class="paid-info" id="paidInfo"></div>
+          <a href="user_payments.html" class="btn-dashboard">Voir mes paiements</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS SUBMISSION STATE -->
+    <div id="successState" style="display:none;">
+      <div class="card">
+        <div class="card-body state-panel">
+          <div class="state-icon">✅</div>
+          <div class="state-title" style="color:var(--success);">Paiement soumis avec succès !</div>
+          <div class="state-desc">
+            Votre justificatif de paiement est en cours de vérification.<br>
+            Délai de traitement : <strong>24h ouvrables</strong>
+          </div>
+          
+          <div class="paid-info" id="successInfo">
+            <div class="paid-row">
+              <span class="paid-key">Référence</span>
+              <span class="paid-val" id="successRefVal">—</span>
+            </div>
+            <div class="paid-row">
+              <span class="paid-key">Méthode</span>
+              <span class="paid-val" id="successMethod">—</span>
+            </div>
+            <div class="paid-row">
+              <span class="paid-key">Montant</span>
+              <span class="paid-val" id="successAmount">—</span>
+            </div>
+          </div>
+
+          <div style="background: #fff0f4; border: 1px solid var(--border); border-radius: 12px; padding: 14px; font-size: 13px; color: var(--text); margin-bottom: 24px;">
+            📧 Une confirmation détaillée a été envoyée à votre adresse email.<br>
+            Vous pouvez consulter le statut de votre paiement dans votre tableau de bord.
+          </div>
+          
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+            <a href="user_dashboard.html" class="btn-dashboard">← Retour au tableau de bord</a>
+            <a href="user_payments.html" class="btn-dashboard" style="background:linear-gradient(135deg,#2196c9,#1a6b8b);">📊 Voir mes paiements</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN PAYMENT FLOW -->
+    <div id="paymentFlow" style="display:none;">
+
+      <!-- 1. SUMMARY CARD -->
+      <div class="card" id="summaryCard">
+        <div class="card-body">
+          <div class="summary-property" id="summaryProperty">🏠 —</div>
+          <div class="summary-meta" id="summaryMeta"></div>
+          <div class="amount-block">
+            <div class="amount-label">💰 Montant à payer</div>
+            <div class="amount-value">
+              <span id="amountVal">—</span>
+              <span class="amount-currency"> TND</span>
+            </div>
+          </div>
+          <div class="summary-footer">
+            <div class="ref-badge" id="refBadge">📌 —</div>
+            <div id="countdownBadge"></div>
+          </div>
+          <div class="progress-container">
+            <div class="progress-label" id="progressLabel">Délai: — jours</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill" style="width: 100%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP INDICATOR -->
+      <div class="step-indicator">
+        <div class="step-indicator-item completed">
+          <div class="step-indicator-circle">✓</div>
+          <div class="step-indicator-label">Contrat signé</div>
+        </div>
+        <div class="step-indicator-item active">
+          <div class="step-indicator-circle">①</div>
+          <div class="step-indicator-label">Choisir méthode</div>
+        </div>
+        <div class="step-indicator-item">
+          <div class="step-indicator-circle">②</div>
+          <div class="step-indicator-label">Détails</div>
+        </div>
+        <div class="step-indicator-item">
+          <div class="step-indicator-circle">③</div>
+          <div class="step-indicator-label">Confirmation</div>
+        </div>
+      </div>
+
+      <!-- 2. METHOD SELECTION -->
+      <div class="card">
+        <div class="card-body">
+          <div class="method-label">Choisissez votre méthode de paiement :</div>
+          <div class="method-grid">
+            <button class="method-btn" id="btnVirement" onclick="selectMethod('virement')">
+              <span class="method-icon">🏦</span>
+              <span>Virement bancaire</span>
+            </button>
+            <button class="method-btn" id="btnEspeces" onclick="selectMethod('especes')">
+              <span class="method-icon">💵</span>
+              <span>Espèces</span>
+            </button>
+            <button class="method-btn" id="btnCarte" onclick="selectMethod('carte')">
+              <span class="method-icon">💳</span>
+              <span>Carte bancaire</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3a. VIREMENT PANEL -->
+      <div class="card method-panel" id="panelVirement">
+        <div class="card-header">
+          <span>🏦</span>
+          <h3>Coordonnées bancaires</h3>
+        </div>
+        <div class="card-body" style="display:flex; flex-direction:column; gap:16px;">
+          <div class="instructions-grid">
+            <div class="info-row">
+              <span class="info-key">Bénéficiaire</span>
+              <span class="info-val">Nexus Gestion Immobilière</span>
+            </div>
+            <div class="info-row">
+              <span class="info-key">Banque</span>
+              <span class="info-val">BIAT</span>
+            </div>
+            <div class="info-row" style="position: relative;">
+              <span class="info-key">RIB</span>
+              <span class="info-val highlight" id="ribVal" style="user-select: all;">20 201 0000000000 78</span>
+              <button class="copy-btn" id="ribCopyBtn" onclick="copyToClipboard('ribVal', 'ribCopyBtn')">📋</button>
+            </div>
+            <div class="info-row" style="position: relative;">
+              <span class="info-key">Référence obligatoire</span>
+              <span class="info-val highlight" id="instrRef" style="user-select: all;">—</span>
+              <button class="copy-btn" id="refCopyBtn" onclick="copyToClipboard('instrRef', 'refCopyBtn')">📋</button>
+            </div>
+          </div>
+
+          <div class="alert info">
+            ⚠️ <strong>Important :</strong> La référence est OBLIGATOIRE dans la description de votre virement pour l'identification de votre paiement.
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="refInput">Votre référence de transaction</label>
+            <input class="form-input" type="text" id="refInput" placeholder="Saisissez votre référence de transaction" />
+          </div>
+
+          <div>
+            <div class="form-label" style="margin-bottom: 8px;">📎 Joindre votre justificatif de paiement</div>
+            <div class="upload-zone" id="uploadZone">
+              <input type="file" id="fileInput" accept="image/*,.pdf" onchange="handleFileSelect(event)">
+              <div class="upload-icon">📎</div>
+              <div class="upload-text">Glissez-déposez votre justificatif</div>
+              <div class="upload-hint">ou cliquez pour sélectionner • JPG, PNG, PDF (max 5MB)</div>
+            </div>
+            <div class="file-preview" id="filePreview">
+              <span class="file-preview-icon">📄</span>
+              <div style="display: flex; flex-direction: column; gap: 2px; flex: 1;">
+                <span class="file-preview-name" id="fileName"></span>
+                <span style="font-size: 11px; color: var(--muted);" id="fileSize"></span>
+              </div>
+              <button class="file-preview-remove" onclick="removeFile()" title="Supprimer">✕</button>
+            </div>
+          </div>
+
+          <div id="virementAlert"></div>
+          <button class="btn-confirm" id="btnConfirm" onclick="submitPayment()">
+            ✅ Confirmer le paiement
+          </button>
+        </div>
+      </div>
+
+      <!-- 3a-bis. ESPECES PANEL -->
+      <div class="card method-panel" id="panelEspeces">
+        <div class="card-header">
+          <span>💵</span>
+          <h3>Paiement en espèces</h3>
+        </div>
+        <div class="card-body" style="display:flex; flex-direction:column; gap:16px;">
+          <div class="office-info">
+            <div class="office-info-row">
+              <div class="office-info-icon">📍</div>
+              <div class="office-info-content">
+                <div class="office-info-label">Adresse</div>
+                <div class="office-info-value">Sièges Nexus - Bureau Comptabilité</div>
+              </div>
+            </div>
+            <div class="office-info-row">
+              <div class="office-info-icon">🕐</div>
+              <div class="office-info-content">
+                <div class="office-info-label">Horaires</div>
+                <div class="office-info-value">Lun-Ven 9h00 - 17h00 (Pause 12h-14h)</div>
+              </div>
+            </div>
+            <div class="office-info-row">
+              <div class="office-info-icon">👤</div>
+              <div class="office-info-content">
+                <div class="office-info-label">Demander</div>
+                <div class="office-info-value">Service Comptabilité</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert info">
+            💡 Apportez le <strong>montant exact</strong> : <strong id="exactAmount">—</strong> TND<br>
+            Conservez votre reçu et joignez sa photo ci-dessous.
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="refInputEsp">Votre référence (facultatif)</label>
+            <input class="form-input" type="text" id="refInputEsp" placeholder="Ex: ESP-20240115" />
+          </div>
+
+          <div>
+            <div class="form-label" style="margin-bottom: 8px;">📎 Joindre votre reçu de paiement</div>
+            <div class="upload-zone" id="uploadZoneEsp">
+              <input type="file" id="fileInputEsp" accept="image/*,.pdf" onchange="handleFileSelectEsp(event)">
+              <div class="upload-icon">📎</div>
+              <div class="upload-text">Glissez-déposez votre reçu</div>
+              <div class="upload-hint">ou cliquez pour sélectionner • JPG, PNG, PDF (max 5MB)</div>
+            </div>
+            <div class="file-preview" id="filePreviewEsp">
+              <span class="file-preview-icon">📄</span>
+              <div style="display: flex; flex-direction: column; gap: 2px; flex: 1;">
+                <span class="file-preview-name" id="fileNameEsp"></span>
+                <span style="font-size: 11px; color: var(--muted);" id="fileSizeEsp"></span>
+              </div>
+              <button class="file-preview-remove" onclick="removeFileEsp()" title="Supprimer">✕</button>
+            </div>
+          </div>
+
+          <div id="especesAlert"></div>
+          <button class="btn-confirm" id="btnConfirmEsp" onclick="submitPaymentEsp()">
+            ✅ Confirmer le paiement
+          </button>
+        </div>
+      </div>
+
+      <!-- 3b. CARTE PANEL -->
+      <div class="card method-panel" id="panelCarte">
+        <div class="card-header">
+          <span>💳</span>
+          <h3>Paiement en ligne sécurisé</h3>
+        </div>
+        <div class="card-body" style="display:flex; flex-direction:column; gap:16px;">
+          <div style="padding: 14px 16px; background: var(--success-soft); border: 1px solid #a7e8c0; border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 20px;">🔒</span>
+            <div style="font-size: 13px; color: var(--success); font-weight: 600;">
+              Paiement sécurisé par <strong>Zoho Books</strong> • Protocole SSL
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 10px;">💳 Cartes acceptées :</div>
+            <div class="card-logos">
+              <div class="card-logo">VISA</div>
+              <div class="card-logo">Mastercard</div>
+              <div class="card-logo">Amex</div>
+            </div>
+          </div>
+
+          <div class="alert info">
+            Vous serez redirigé vers notre portail de paiement sécurisé Zoho Books.<br>
+            Montant à payer : <strong id="carteAmount">—</strong> TND
+          </div>
+
+          <div id="carteAlert"></div>
+          <button class="btn-online" id="btnOnline" onclick="proceedOnline()">
+            🔒 Procéder au paiement sécurisé →
+          </button>
+
+          <div style="font-size: 12px; color: var(--muted); text-align: center; padding-top: 8px; border-top: 1px solid var(--border);">
+            ℹ️ Vous quitterez temporairement ce site pour effectuer votre paiement de manière sécurisée.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /paymentFlow -->
+  </main>
+
+  <script src="auth-helper.js"></script>
+  <script>
+    var state = {
+      contractId: null,
+      payment: null,
+      contract: null,
+      selectedMethod: null,
+      selectedFile: null,
+      selectedFileBase64: null
+    };
+
+    // ── Helpers ──────────────────────────────────────────────────────────────────
+
+    function n(v) {
+      if (v == null) return '';
+      if (typeof v === 'string' || typeof v === 'number') return String(v).trim();
+      if (Array.isArray(v)) { for (var i = 0; i < v.length; i++) { var r = n(v[i]); if (r) return r; } return ''; }
+      if (typeof v === 'object') {
+        if (v.display_value) return n(v.display_value);
+        if (v.zc_display_value) return n(v.zc_display_value);
+      }
+      return '';
+    }
+
+    function esc(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function showLoading(msg) {
+      document.getElementById('loadingText').textContent = msg || 'Chargement...';
+      document.getElementById('loadingOverlay').classList.add('active');
+    }
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    function showAlert(containerId, msg, type) {
+      var el = document.getElementById(containerId);
+      if (!msg) { el.innerHTML = ''; return; }
+      el.innerHTML = '<div class="alert ' + (type || 'error') + '">' + esc(msg) + '</div>';
+    }
+
+    // ── Copy to clipboard ─────────────────────────────────────────────────────────
+
+    function copyToClipboard(elementId, btnId) {
+      var el = document.getElementById(elementId);
+      var text = el.textContent.trim();
+      if (!text || text === '—') return;
+      
+      navigator.clipboard.writeText(text).then(function() {
+        var btn = document.getElementById(btnId);
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.classList.remove('copied');
+        }, 2000);
+      }).catch(function(err) {
+        console.error('Erreur lors de la copie:', err);
+      });
+    }
+
+    // ── Countdown logic ───────────────────────────────────────────────────────────
+
+    function parseDate(str) {
+      if (!str) return null;
+      
+      console.log('Parsing date string:', str);
+      
+      // Format: "26-May-2026"
+      var m = str.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
+      if (m) {
+        var months = { 
+          Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11,
+          jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11
+        };
+        var monthName = m[2].charAt(0).toUpperCase() + m[2].substring(1).toLowerCase();
+        var monthNum = months[monthName];
+        if (monthNum !== undefined) {
+          var result = new Date(+m[3], monthNum, +m[1]);
+          console.log('Parsed date:', result);
+          return result;
+        }
+      }
+      
+      // Try ISO format: "2026-05-26"
+      var iso = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (iso) {
+        var result = new Date(+iso[1], +iso[2] - 1, +iso[3]);
+        console.log('Parsed ISO date:', result);
+        return result;
+      }
+      
+      // Try generic date parsing
+      var d = new Date(str);
+      if (!isNaN(d.getTime())) {
+        console.log('Parsed generic date:', d);
+        return d;
+      }
+      
+      console.log('Could not parse date:', str);
+      return null;
+    }
+
+    function buildCountdown(limitDateStr) {
+      var limit = parseDate(limitDateStr);
+      var progressFill = document.getElementById('progressFill');
+      var progressLabel = document.getElementById('progressLabel');
+
+      if (!limit) {
+        // No date provided - show neutral state
+        if (progressFill) progressFill.style.width = '50%';
+        if (progressLabel) progressLabel.textContent = 'Délai: À déterminer';
+        return '<span class="countdown-badge green">✓ En attente</span>';
+      }
+
+      var now = new Date();
+      var diffMs = limit - now;
+      var diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      console.log('Countdown - Limit:', limit, 'Now:', now, 'DiffDays:', diffDays);
+
+      // Update progress bar and label
+      var progress = Math.max(0, Math.min(100, (diffDays / 7) * 100));
+      if (progressFill) {
+        progressFill.style.width = progress + '%';
+      }
+      
+      if (progressLabel) {
+        if (diffDays <= 0) {
+          progressLabel.textContent = 'Délai: Dépassé';
+        } else if (diffDays === 1) {
+          progressLabel.textContent = 'Délai: Dernier jour !';
+        } else {
+          progressLabel.textContent = 'Délai: ' + diffDays + ' jour' + (diffDays > 1 ? 's' : '');
+        }
+      }
+
+      if (diffMs < 0) {
+        return '<span class="countdown-badge red">❌ Délai dépassé</span>';
+      } else if (diffDays <= 3) {
+        return '<span class="countdown-badge orange">⚠️ J-' + diffDays + '</span>';
+      } else {
+        return '<span class="countdown-badge green">✓ J-' + diffDays + '</span>';
+      }
+    }
+
+    // ── Render summary ────────────────────────────────────────────────────────────
+
+    function renderSummary() {
+      var p = state.payment;
+      var c = state.contract;
+
+      console.log('Payment object:', p);
+      console.log('Contract object:', c);
+
+      // Extract contract ID - from payment record (Contract field) or contract object
+      var contractId = n(p && (p.Contract || p.contract || p.ContractID || p.contract_id)) ||
+                       n(c && (c.ID1 || c.ID || c.id)) || 
+                       state.contractId;
+
+      // Extract property from contract
+      var property = n(c && (c.Property || c.property_name || c.Property_Name || c.property)) || 
+                     'Bien #' + contractId;
+
+      // Extract type from contract
+      var type = n(c && (c.type_field || c.Type || c.type || c.Type_field)) || 
+                 n(p && (p.type || p.Type)) || '';
+
+      // *** AMOUNT - PRIORITY FROM PAYMENT RECORD ***
+      var amount = '';
+      if (p && p.Amount) {
+        amount = n(p.Amount);  // Direct from payment: 3,500.00 دت.
+        console.log('Amount from payment.Amount:', amount);
+      }
+      if (!amount && p) {
+        amount = n(p.Montant || p.montant || p.amount || p.Montant_Paiement);
+      }
+      if (!amount && c) {
+        // Try contract fields: prix_total, Amount, Montant, etc
+        amount = n(c.prix_total || c.Amount || c.Montant || c.montant || c.amount || c.Prix || c.Price || c.Loyer);
+        console.log('Amount from contract.prix_total or other fields:', amount);
+      }
+
+      // *** DATE LIMITE - PRIORITY FROM PAYMENT RECORD ***
+      var limitDate = '';
+      if (p && p.Date_limite) {
+        limitDate = n(p.Date_limite);  // Direct from payment: 26-May-2026
+        console.log('Date_limite from payment.Date_limite:', limitDate);
+      }
+      if (!limitDate && p) {
+        limitDate = n(p.Due_Date || p.Echeance || p.date_limite || p.due_date || p.echeance);
+      }
+      if (!limitDate && c) {
+        // Try to calculate from contract dates or use existing Date_limite
+        var signDate = n(c.Date_signature || c.date_signature);
+        if (signDate && !n(c.Date_limite || c.Due_Date || c.Echeance)) {
+          // If no deadline exists, calculate 7 days from signature
+          var sd = parseDate(signDate);
+          if (sd) {
+            var deadline = new Date(sd);
+            deadline.setDate(deadline.getDate() + 7);
+            limitDate = ('0' + deadline.getDate()).slice(-2) + '-' + 
+                       ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][deadline.getMonth()] + '-' +
+                       deadline.getFullYear();
+            console.log('Calculated deadline from signature date:', limitDate);
+          }
+        }
+        // Or use Date_limite if it exists
+        if (!limitDate) {
+          limitDate = n(c.Date_limite || c.Due_Date || c.Echeance || c.date_limite || c.due_date);
+        }
+      }
+
+      // Extract reference
+      var ref = n(p && (p.Ref_transaction || p.Reference || p.reference || p.ID1 || p.ID || p.id)) ||
+                ('PAY-' + contractId);
+
+      console.log('Final values - Amount:', amount, 'Date_limite:', limitDate, 'Ref:', ref);
+
+      // Display property
+      document.getElementById('summaryProperty').innerHTML = '🏠 ' + esc(property);
+
+      // Display meta information
+      var metaHtml = '<span>📋 Contrat #' + esc(contractId) + '</span>';
+      if (type) metaHtml += '<span style="color:var(--border);">|</span><span>' + esc(type) + '</span>';
+      if (limitDate) metaHtml += '<span style="color:var(--border);">|</span><span>⏰ Limite : ' + esc(limitDate) + '</span>';
+      document.getElementById('summaryMeta').innerHTML = metaHtml;
+
+      // Format and display amount
+      var formattedAmount = '—';
+      if (amount && amount !== '—') {
+        try {
+          // Extract just the numeric part (remove currency symbols, etc)
+          var cleanAmount = String(amount).split(/[^\d.,]/)[0];
+          var numAmount = parseFloat(cleanAmount.replace(',', '.'));
+          if (!isNaN(numAmount)) {
+            formattedAmount = numAmount.toLocaleString('fr-TN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+          }
+        } catch (e) {
+          formattedAmount = String(amount).split(/[^\d.,]/)[0];
+          console.error('Amount parsing error:', e);
+        }
+      }
+      
+      console.log('Formatted amount:', formattedAmount);
+      document.getElementById('amountVal').textContent = formattedAmount;
+      document.getElementById('exactAmount').textContent = formattedAmount;
+      document.getElementById('carteAmount').textContent = formattedAmount;
+
+      // Display reference
+      document.getElementById('refBadge').innerHTML = '📌 Réf: ' + esc(ref);
+      document.getElementById('instrRef').textContent = ref;
+
+      // Build and display countdown
+      var countdownHtml = buildCountdown(limitDate);
+      document.getElementById('countdownBadge').innerHTML = countdownHtml;
+    }
+
+    // ── Method selection ──────────────────────────────────────────────────────────
+
+    function selectMethod(method) {
+      state.selectedMethod = method;
+
+      ['btnVirement','btnEspeces','btnCarte'].forEach(function(id) {
+        document.getElementById(id).classList.remove('selected');
+      });
+      ['panelVirement','panelEspeces','panelCarte'].forEach(function(id) {
+        document.getElementById(id).classList.remove('active');
+      });
+
+      if (method === 'virement') {
+        document.getElementById('btnVirement').classList.add('selected');
+        document.getElementById('panelVirement').classList.add('active');
+      } else if (method === 'especes') {
+        document.getElementById('btnEspeces').classList.add('selected');
+        document.getElementById('panelEspeces').classList.add('active');
+      } else if (method === 'carte') {
+        document.getElementById('btnCarte').classList.add('selected');
+        document.getElementById('panelCarte').classList.add('active');
+      }
+
+      // Update step indicator
+      var stepItems = document.querySelectorAll('.step-indicator-item');
+      if (stepItems.length >= 3) {
+        for (var i = 0; i < stepItems.length; i++) {
+          stepItems[i].classList.remove('active');
+        }
+        // Second item (index 1) is always "Choisir méthode" - mark it and next as active
+        if (stepItems[1]) stepItems[1].classList.add('active');
+      }
+    }
+
+    // ── File upload ───────────────────────────────────────────────────────────────
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 B';
+      var k = 1024;
+      var sizes = ['B', 'KB', 'MB'];
+      var i = Math.floor(Math.log(bytes) / Math.log(k));
+      return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+    }
+
+    function handleFileSelect(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+      
+      // Validate file size
+      if (file.size > 5 * 1024 * 1024) {
+        showAlert('virementAlert', 'Le fichier dépasse 5 MB. Veuillez sélectionner un fichier plus petit.', 'error');
+        return;
+      }
+
+      state.selectedFile = file;
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        state.selectedFileBase64 = e.target.result;
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        document.getElementById('filePreview').classList.add('visible');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeFile() {
+      state.selectedFile = null;
+      state.selectedFileBase64 = null;
+      document.getElementById('fileInput').value = '';
+      document.getElementById('filePreview').classList.remove('visible');
+      showAlert('virementAlert', '');
+    }
+
+    // Espèces file handlers
+    function handleFileSelectEsp(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+      
+      // Validate file size
+      if (file.size > 5 * 1024 * 1024) {
+        showAlert('especesAlert', 'Le fichier dépasse 5 MB. Veuillez sélectionner un fichier plus petit.', 'error');
+        return;
+      }
+
+      state.selectedFile = file;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        state.selectedFileBase64 = e.target.result;
+        document.getElementById('fileNameEsp').textContent = file.name;
+        document.getElementById('fileSizeEsp').textContent = formatFileSize(file.size);
+        document.getElementById('filePreviewEsp').classList.add('visible');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeFileEsp() {
+      state.selectedFile = null;
+      state.selectedFileBase64 = null;
+      document.getElementById('fileInputEsp').value = '';
+      document.getElementById('filePreviewEsp').classList.remove('visible');
+      showAlert('especesAlert', '');
+    }
+
+    async function submitPaymentEsp() {
+      showAlert('especesAlert', '');
+      if (!state.selectedFile) {
+        showAlert('especesAlert', 'Veuillez joindre un reçu de paiement.', 'error');
+        return;
+      }
+      var ref = document.getElementById('refInputEsp').value.trim() || ('ESP-' + state.contractId);
+      var paymentId = n(state.payment && (state.payment.ID || state.payment.id));
+      showLoading('⏳ Envoi en cours...');
+      document.getElementById('btnConfirmEsp').disabled = true;
+      try {
+        if (paymentId) {
+          var resp = await fetch('/api/payments/update/' + paymentId, {
+            method: 'PATCH', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ methode: 'Espèces', Preuve: state.selectedFileBase64, Ref_transaction: ref })
+          });
+          var data = await resp.json();
+          if (!resp.ok || data.success === false) throw new Error(data.error || 'Erreur serveur');
+        }
+        updateSuccessState('Espèces', ref);
+        showSuccess();
+      } catch (err) {
+        showAlert('especesAlert', 'Erreur : ' + err.message, 'error');
+        document.getElementById('btnConfirmEsp').disabled = false;
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // Drag & drop — virement zone
+    (function() {
+      var zone = document.getElementById('uploadZone');
+      zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+      zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+      zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        var file = e.dataTransfer.files[0];
+        if (!file) return;
+        var dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById('fileInput').files = dt.files;
+        handleFileSelect({ target: { files: [file] } });
+      });
+    })();
+
+    // Drag & drop — espèces zone
+    (function() {
+      var zone = document.getElementById('uploadZoneEsp');
+      zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+      zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+      zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        var file = e.dataTransfer.files[0];
+        if (!file) return;
+        handleFileSelectEsp({ target: { files: [file] } });
+      });
+    })();
+
+    // ── Submit payment ────────────────────────────────────────────────────────────
+
+    function updateSuccessState(method, ref) {
+      var p = state.payment;
+      var amount = n(p && (p.Montant || p.Amount || p.montant)) ||
+                   n(state.contract && (state.contract.Montant || state.contract.Amount || state.contract.Prix || state.contract.Price || state.contract.Loyer));
+      
+      document.getElementById('successRefVal').textContent = ref;
+      document.getElementById('successMethod').textContent = method;
+      document.getElementById('successAmount').textContent = amount
+        ? Number(amount).toLocaleString('fr-TN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TND'
+        : '—';
+    }
+
+    async function submitPayment() {
+      showAlert('virementAlert', '');
+      var ref = document.getElementById('refInput').value.trim();
+      if (!ref) {
+        showAlert('virementAlert', 'Veuillez saisir votre référence de transaction.', 'error');
+        return;
+      }
+      if (!state.selectedFile) {
+        showAlert('virementAlert', 'Veuillez joindre un justificatif de paiement.', 'error');
+        return;
+      }
+
+      var paymentId = n(state.payment && (state.payment.ID || state.payment.id));
+      var methodLabel = 'Virement bancaire';
+
+      showLoading('⏳ Envoi en cours...');
+      document.getElementById('btnConfirm').disabled = true;
+
+      try {
+        if (paymentId) {
+          var resp = await fetch('/api/payments/update/' + paymentId, {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              methode: methodLabel,
+              Preuve: state.selectedFileBase64,
+              Ref_transaction: ref
+            })
+          });
+          var data = await resp.json();
+          if (!resp.ok || data.success === false) throw new Error(data.error || 'Erreur serveur');
+        }
+        updateSuccessState(methodLabel, ref);
+        showSuccess();
+      } catch (err) {
+        showAlert('virementAlert', 'Erreur : ' + err.message, 'error');
+        document.getElementById('btnConfirm').disabled = false;
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // ── Online payment ────────────────────────────────────────────────────────────
+
+    async function proceedOnline() {
+      showAlert('carteAlert', '');
+      var paymentId = n(state.payment && (state.payment.ID || state.payment.id));
+      if (!paymentId) {
+        showAlert('carteAlert', 'La facture en ligne n\'est pas encore disponible. Utilisez le virement ou les espèces.', 'error');
+        return;
+      }
+
+      showLoading('🔒 Connexion sécurisée en cours...');
+      document.getElementById('btnOnline').disabled = true;
+
+      try {
+        var resp = await fetch('/api/payments/invoice-link/' + paymentId, { credentials: 'include' });
+        var data = await resp.json();
+        if (!resp.ok || !data.paymentUrl) throw new Error(data.error || 'Lien de paiement indisponible');
+        
+        // Redirect after a brief delay to show the security message
+        setTimeout(function() {
+          window.location.href = data.paymentUrl;
+        }, 500);
+      } catch (err) {
+        hideLoading();
+        showAlert('carteAlert', 'Erreur : ' + err.message, 'error');
+        document.getElementById('btnOnline').disabled = false;
+      }
+    }
+
+    // ── View switches ─────────────────────────────────────────────────────────────
+
+    function showNoPayment() {
+      document.getElementById('noPayContractId').textContent = state.contractId || '—';
+      document.getElementById('noPaymentState').style.display = 'block';
+      document.getElementById('paymentFlow').style.display = 'none';
+      document.getElementById('errorState').style.display = 'none';
+      document.getElementById('paidState').style.display = 'none';
+      document.getElementById('successState').style.display = 'none';
+    }
+
+    function showFlow() {
+      document.getElementById('paymentFlow').style.display = 'block';
+      document.getElementById('errorState').style.display = 'none';
+      document.getElementById('paidState').style.display = 'none';
+      document.getElementById('successState').style.display = 'none';
+    }
+
+    function showError(msg) {
+      document.getElementById('errorMsg').textContent = msg;
+      document.getElementById('errorState').style.display = 'block';
+      document.getElementById('paymentFlow').style.display = 'none';
+      document.getElementById('paidState').style.display = 'none';
+      document.getElementById('successState').style.display = 'none';
+    }
+
+    function showPaid() {
+      var p = state.payment;
+      var status = n(p && (p.Status || p.Statut || p.status)) || '—';
+      var date = n(p && (p.Date_paiement || p.Payment_Date || p.Date || p.date_paiement || p.date)) || '—';
+      var ref = n(p && (p.Ref_transaction || p.Reference || p.reference || p.ID1 || p.ID)) || '—';
+      var method = n(p && (p.methode || p.Methode || p.Method || p.method)) || '—';
+      
+      var paidInfoHtml = '<div class="paid-row"><span class="paid-key">Statut</span><span class="paid-val">' + esc(status) + '</span></div>';
+      
+      if (method !== '—') {
+        paidInfoHtml += '<div class="paid-row"><span class="paid-key">Méthode</span><span class="paid-val">' + esc(method) + '</span></div>';
+      }
+      
+      if (date !== '—') {
+        paidInfoHtml += '<div class="paid-row"><span class="paid-key">Date</span><span class="paid-val">' + esc(date) + '</span></div>';
+      }
+      
+      if (ref !== '—') {
+        paidInfoHtml += '<div class="paid-row"><span class="paid-key">Référence</span><span class="paid-val">' + esc(ref) + '</span></div>';
+      }
+      
+      document.getElementById('paidInfo').innerHTML = paidInfoHtml;
+      document.getElementById('paidState').style.display = 'block';
+      document.getElementById('paymentFlow').style.display = 'none';
+      document.getElementById('errorState').style.display = 'none';
+      document.getElementById('successState').style.display = 'none';
+    }
+
+    function showSuccess() {
+      document.getElementById('successState').style.display = 'block';
+      document.getElementById('paymentFlow').style.display = 'none';
+      document.getElementById('errorState').style.display = 'none';
+      document.getElementById('paidState').style.display = 'none';
+    }
+
+    // ── Page load ─────────────────────────────────────────────────────────────────
+
+    async function loadPage() {
+      showLoading('Chargement des données...');
+
+      var authStatus = await requireAuth();
+      if (!authStatus || !authStatus.loggedIn) return;
+
+      state.contractId = new URLSearchParams(window.location.search).get('contractId');
+      if (!state.contractId) {
+        hideLoading();
+        showError('Aucun contrat spécifié dans l\'URL. Veuillez accéder à cette page depuis vos contrats.');
+        return;
+      }
+
+      try {
+        var [paymentResp, contractsResp] = await Promise.all([
+          fetch('/api/payments/contract/' + state.contractId + '?_=' + Date.now(), { credentials: 'include' }),
+          fetch('/api/contracts/user', { credentials: 'include' })
+        ]);
+
+        var paymentData = await paymentResp.json();
+        var contractsData = await contractsResp.json();
+
+        console.log('Payment API response:', paymentData);
+        console.log('Contracts API response:', contractsData);
+
+        if (!paymentResp.ok || !paymentData.success) {
+          console.warn('Payment API error:', paymentData);
+        }
+
+        var payments = Array.isArray(paymentData.data) ? paymentData.data : [];
+        state.payment = payments[0] || null;
+
+        if (contractsResp.ok && contractsData.success) {
+          var contracts = Array.isArray(contractsData.data) ? contractsData.data : [];
+          
+          // Better contract matching - try multiple ID fields
+          state.contract = contracts.find(function(c) {
+            var contractIdStr = String(state.contractId).trim();
+            return String(c.ID || '').trim() === contractIdStr ||
+                   String(c.ID1 || '').trim() === contractIdStr ||
+                   String(c.id || '').trim() === contractIdStr;
+          }) || null;
+
+          // If not found and payment exists, create a minimal contract object from payment
+          if (!state.contract && state.payment) {
+            state.contract = {
+              ID: state.payment.Contract_ID || state.payment.contract_id || state.contractId,
+              ID1: state.contractId,
+              Property: state.payment.Property || state.payment.property_name,
+              Type: state.payment.Type || '',
+              Amount: state.payment.Amount
+            };
+          }
+        }
+
+        hideLoading();
+
+        // Check if already paid
+        var status = n(state.payment && (state.payment.Status || state.payment.Statut || state.payment.status));
+        var isAlreadyPaid = /réussi|reussi|payé|paye|paid|success|completed/i.test(status);
+
+        if (isAlreadyPaid) {
+          showPaid();
+        } else {
+          // Show form even if no payment record exists yet
+          renderSummary();
+          showFlow();
+        }
+      } catch (err) {
+        hideLoading();
+        console.error('Payment page error:', err);
+        showError('Erreur : ' + err.message);
+      }
+    }
+
+    loadPage();
+  </script>
+
+  <!-- Zoho SalesIQ -->
+  <script>window.$zoho=window.$zoho||{};$zoho.salesiq=$zoho.salesiq||{};$zoho.salesiq.ready=function(){$zoho.salesiq.floatbutton.visible("hide");};</script>
+  <script id="zsiqscript" src="https://salesiq.zohopublic.com/widget?wc=siq7e6f4b3b04408babc690c715e93d1898836ede5e7367d466e1f3f373feffe0b9" defer></script>
+  <style>#gi-help-btn{position:fixed;bottom:24px;left:24px;z-index:9998;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-family:"Segoe UI",Tahoma,sans-serif;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,.4);display:flex;align-items:center;gap:8px;transition:transform .2s,box-shadow .2s}#gi-help-btn:hover{transform:scale(1.05);box-shadow:0 6px 28px rgba(124,58,237,.55)}</style>
+  <button id="gi-help-btn" onclick="if(window.$zoho&amp;&amp;$zoho.salesiq&amp;&amp;$zoho.salesiq.floatwindow){$zoho.salesiq.floatwindow.visible('show');}else if(window.$zoho&amp;&amp;$zoho.salesiq){$zoho.salesiq.floatbutton.visible('show');}">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    J'ai besoin d'aide
+  </button>
+</body>
+</html>

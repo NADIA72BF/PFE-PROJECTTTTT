@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Détails complets du bien immobilier - GI Immobilier">
+  <title>GI Immobilier — Appartement Lac à Tunis</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <h1 class="nav-logo">GI Immobilier</h1>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Accueil</a>
+      <a href="annonces.html" class="nav-link">← Retour aux annonces</a>
+    </div>
+    <a href="login.html" class="nav-btn">Connexion</a>
+  </nav>
+
+  <div class="detail-img">🏠 Galerie photos du bien</div>
+
+  <article class="detail-body">
+    <p style="text-align:center;color:var(--gray-600);padding:32px">Chargement des détails...</p>
+  </article>
+
+  <div class="map-placeholder">🗺️ Carte Google Maps — Localisation du bien</div>
+
+  <!-- ✅ Reservation Modal -->
+  <div id="reservationModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:white;border-radius:12px;padding:32px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <h2 style="font-size:24px;font-weight:700;margin:0">Réserver cette propriété</h2>
+        <button id="closeModal" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--gray-400)">&times;</button>
+      </div>
+
+      <div id="reservationMessage" class="error-alert" style="display:none;margin-bottom:16px;padding:12px 16px;border-radius:4px"></div>
+
+      <form id="reservationForm" style="display:flex;flex-direction:column;gap:16px">
+        <div>
+          <label style="display:block;font-weight:600;margin-bottom:8px;color:var(--gray-900)">Date de début *</label>
+          <input id="reservationStartDate" type="date" required style="width:100%;padding:12px;border:1px solid var(--gray-300);border-radius:8px;font-size:14px">
+        </div>
+
+        <div>
+          <label style="display:block;font-weight:600;margin-bottom:8px;color:var(--gray-900)">Date de fin *</label>
+          <input id="reservationEndDate" type="date" required style="width:100%;padding:12px;border:1px solid var(--gray-300);border-radius:8px;font-size:14px">
+        </div>
+
+        <div style="background:var(--gray-50);padding:12px;border-radius:8px;border-left:4px solid var(--primary)">
+          <p style="font-size:12px;color:var(--gray-600);margin:0">
+            📅 Durée estimée: <span id="estimatedDuration" style="font-weight:600;color:var(--primary)">—</span>
+          </p>
+        </div>
+
+        <button type="submit" style="background:linear-gradient(135deg,var(--primary),var(--accent));color:white;padding:12px 24px;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;margin-top:8px">
+          Confirmer la réservation
+        </button>
+
+        <p style="font-size:12px;color:var(--gray-600);text-align:center;margin:0">
+          Une notification sera envoyée au propriétaire pour validation
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ✅ Purchase Modal -->
+  <div id="purchaseModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:white;border-radius:12px;padding:32px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <h2 style="font-size:24px;font-weight:700;margin:0">Demander à acheter</h2>
+        <button id="closePurchaseModal" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--gray-400)">&times;</button>
+      </div>
+
+      <div id="purchasePropertyInfo" style="background:#fff3f6;border-radius:8px;padding:12px;margin-bottom:16px;border-left:4px solid var(--primary)">
+        <p style="margin:0;font-size:13px;color:var(--gray-700)">💰 Prix : <strong id="purchasePriceDisplay">—</strong> DT</p>
+      </div>
+
+      <div id="purchaseMessage" class="error-alert" style="display:none;margin-bottom:16px;padding:12px 16px;border-radius:4px"></div>
+
+      <form id="purchaseForm" style="display:flex;flex-direction:column;gap:16px">
+        <div>
+          <label style="display:block;font-weight:600;margin-bottom:8px;color:var(--gray-900)">Préférence de contact *</label>
+          <select id="purchaseContactPref" required style="width:100%;padding:12px;border:1px solid var(--gray-300);border-radius:8px;font-size:14px;background:white">
+            <option value="Email">📧 Email</option>
+            <option value="Appel">📞 Appel téléphonique</option>
+            <option value="Whatsapp">💬 WhatsApp</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display:block;font-weight:600;margin-bottom:8px;color:var(--gray-900)">Message (optionnel)</label>
+          <textarea id="purchaseMessage_text" rows="4" placeholder="Présentez-vous ou posez vos questions au vendeur..." style="width:100%;padding:12px;border:1px solid var(--gray-300);border-radius:8px;font-size:14px;resize:vertical;font-family:inherit;box-sizing:border-box"></textarea>
+        </div>
+
+        <div style="background:#fbe9ee;padding:12px;border-radius:8px;border-left:4px solid var(--accent);font-size:12px;color:#6d2b3a;line-height:1.5">
+          ℹ️ Votre demande sera transmise au vendeur. Il vous contactera via votre préférence pour finaliser la vente. Un contrat sera généré automatiquement après acceptation.
+        </div>
+
+        <button type="submit" style="background:linear-gradient(135deg,var(--primary),var(--accent));color:white;padding:12px 24px;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;margin-top:8px">
+          Envoyer la demande d'achat
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ✅ Modal CSS -->
+  <style>
+    #reservationModal[style*="display: flex"] {
+      display: flex !important;
+    }
+
+    #purchaseModal[style*="display: flex"] {
+      display: flex !important;
+    }
+
+    .error-alert {
+      background-color: #fce4ec;
+      border-left: 4px solid #ea4335;
+      color: #c62828;
+      padding: 12px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .success-alert {
+      background-color: #e8f5e9;
+      border-left: 4px solid #34a853;
+      color: #2e7d32;
+      padding: 12px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* ── Contact owner popup ── */
+    #contact-owner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.48);
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+    }
+    #contact-owner-overlay.open { display: flex; }
+
+    #contact-owner-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 32px 36px 28px;
+      min-width: 300px;
+      max-width: 380px;
+      width: 90%;
+      box-shadow: 0 24px 64px rgba(0,0,0,.22);
+      text-align: center;
+      position: relative;
+    }
+    #contact-popup-close {
+      position: absolute;
+      top: 12px; right: 16px;
+      background: none; border: none;
+      font-size: 22px; line-height: 1;
+      cursor: pointer; color: #94a3b8;
+      transition: color .15s;
+    }
+    #contact-popup-close:hover { color: #475569; }
+
+    #contact-owner-card h3 {
+      margin: 0 0 4px;
+      font-size: 18px; font-weight: 700; color: #1e293b;
+    }
+    #contact-popup-subtitle {
+      margin: 0 0 24px;
+      font-size: 13px; color: #64748b;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #contact-popup-btns {
+      display: flex; gap: 12px; justify-content: center;
+    }
+    .contact-opt-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 22px;
+      border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 600;
+      color: #fff; cursor: pointer;
+      font-family: inherit;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .contact-opt-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,.18);
+    }
+    .contact-opt-btn.wa { background: #25D366; }
+    .contact-opt-btn.em { background: #4285F4; }
+    #contact-owner-btn:hover { background: #6d1424 !important; }
+
+  </style>
+
+  <section style="padding:24px;max-width:600px;margin:0 auto;background:#fff;border-radius:var(--radius-lg);border:1px solid var(--gray-300);margin-top:-20px;position:relative;z-index:1">
+    <div id="actionButtons" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+      <button class="cta-btn" data-action="buy-property" data-property-id="" style="flex:1;border:none;cursor:pointer;display:none">Demande d'achat</button>
+      <button class="cta-btn" data-action="rent-property" data-property-id="" style="flex:1;border:none;cursor:pointer;background:linear-gradient(135deg,var(--primary),#9e2c46);color:white;display:none">Réserver</button>
+<button id="contact-owner-btn" style="flex:1;display:none;align-items:center;justify-content:center;gap:8px;background:#8B1A2F;color:white;border:none;border-radius:8px;padding:12px 16px;font-weight:600;font-size:14px;cursor:pointer;transition:background .2s">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Contacter le propriétaire
+      </button>
+    </div>
+
+    <!-- Contact owner popup -->
+    <div id="contact-owner-overlay">
+      <div id="contact-owner-card">
+        <button id="contact-popup-close">&times;</button>
+        <h3>Contacter le propriétaire</h3>
+        <p id="contact-popup-subtitle"></p>
+        <div id="contact-popup-btns">
+          <button id="contact-wa-btn" class="contact-opt-btn wa">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004c-1.052 0-2.082.384-2.848 1.086l-.205.195-.212-.038c-.655-.119-1.297-.264-1.91-.536L7.06 5.378l.532 1.68c-.325.68-.502 1.434-.502 2.231 0 2.619 2.134 4.753 4.752 4.753 1.215 0 2.356-.453 3.229-1.274 2.522-2.522 2.295-6.66-.5-8.813-.829-.82-1.922-1.316-3.093-1.316"/></svg>
+            WhatsApp
+          </button>
+          <button id="contact-em-btn" class="contact-opt-btn em">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            Email
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <footer class="footer" style="margin-top:32px">
+    <div>
+      <span class="footer-logo">GI Immobilier</span>
+      <p style="font-size: 12px; color: var(--gray-400); margin-top: 8px;">La meilleure plateforme immobilière de Tunisie</p>
+    </div>
+    <nav class="footer-links">
+      <a href="contact.html" class="footer-link">Contact</a>
+      <a href="#" class="footer-link">Conditions d'utilisation</a>
+      <a href="#" class="footer-link">Politique de confidentialité</a>
+    </nav>
+  </footer>
+  <script src="auth-helper.js"></script>
+  <script src="detail.js"></script>
+  <script src="chatbot-widget.js"></script>
+  <!-- Support Nexia - Zoho SalesIQ -->
+  <script>window.$zoho=window.$zoho||{};$zoho.salesiq=$zoho.salesiq||{};$zoho.salesiq.ready=function(){$zoho.salesiq.floatbutton.visible("hide");};</script>
+  <script id="zsiqscript" src="https://salesiq.zohopublic.com/widget?wc=siq7e6f4b3b04408babc690c715e93d1898836ede5e7367d466e1f3f373feffe0b9" defer></script>
+  <style>#gi-help-btn{position:fixed;bottom:24px;left:24px;z-index:9998;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-family:"Segoe UI",Tahoma,sans-serif;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,.4);display:flex;align-items:center;gap:8px;transition:transform .2s,box-shadow .2s}#gi-help-btn:hover{transform:scale(1.05);box-shadow:0 6px 28px rgba(124,58,237,.55)}</style>
+  <button id="gi-help-btn" onclick="if(window.$zoho&amp;&amp;$zoho.salesiq&amp;&amp;$zoho.salesiq.floatwindow){$zoho.salesiq.floatwindow.visible('show');}else if(window.$zoho&amp;&amp;$zoho.salesiq){$zoho.salesiq.floatbutton.visible('show');}">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    J'ai besoin d'aide
+  </button>
+</body>
+</html>

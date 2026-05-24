@@ -29,11 +29,15 @@
 14. [AI Chatbot — Nexia](#14-ai-chatbot--nexia)
 15. [Image Management](#15-image-management)
 16. [API Endpoint Reference](#16-api-endpoint-reference)
-17. [Zoho Creator Workflow Reference](#17-zoho-creator-workflow-reference)
-18. [Frontend Pages Reference](#18-frontend-pages-reference)
-19. [Non-Functional Requirements](#19-non-functional-requirements)
-20. [Technical Stack](#20-technical-stack)
-21. [Environment Configuration](#21-environment-configuration)
+17. [Zoho Creator — Database & Workflows](#17-zoho-creator--database--workflows)
+18. [Zoho Sign — Contract Signing & Documents](#18-zoho-sign--contract-signing--documents)
+19. [Zoho Flow — Automated Status Updates](#19-zoho-flow--automated-status-updates)
+20. [Zoho Analytics — Admin Dashboards & Charts](#20-zoho-analytics--admin-dashboards--charts)
+21. [Zoho API Console — OAuth & Data Integration](#21-zoho-api-console--oauth--data-integration)
+22. [Frontend Pages Reference](#22-frontend-pages-reference)
+23. [Non-Functional Requirements](#23-non-functional-requirements)
+24. [Technical Stack](#24-technical-stack)
+25. [Environment Configuration](#25-environment-configuration)
 
 ---
 
@@ -471,9 +475,11 @@ The delay is necessary to let Zoho Creator process the first update before the s
 
 ### 9.1 Contract Generation
 
-Contracts are **not created by Node.js**. They are created automatically by Zoho Creator workflows:
-- `generer_contrat_location` — triggered when `Reservation.Status` is set to `Confirmé`.
-- `generer_contrat_achat` — triggered when `Purchase.Statut` is set to `Accepté`.
+Contracts are **not created by Node.js**. They are created automatically by Zoho Creator workflows and signed via Zoho Sign (see §18):
+- `generer_contrat_location` — triggered when `Reservation.Status` is set to `Confirmé`; generates a rental contract PDF via Zoho Sign.
+- `generer_contrat_achat` — triggered when `Purchase.Statut` is set to `Accepté`; generates a sale contract PDF via Zoho Sign.
+
+Once all parties sign the document in Zoho Sign, a **Zoho Flow** automation (see §19) updates `Contract.Signing_Status` to `'Signé'` in Zoho Creator.
 
 ### 9.2 User Contracts
 
@@ -833,25 +839,301 @@ Every property record returned by the API is enriched with:
 
 ---
 
-## 17. Zoho Creator Workflow Reference
+## 17. Zoho Creator — Database & Workflows
 
-All workflows are Deluge scripts configured inside Zoho Creator. Node.js **never replicates** their logic.
+### 17.1 Role in the Platform
 
-| Workflow Name | Form/Report Trigger | What It Does |
-|---------------|---------------------|--------------|
-| `Add_User` | `User` form on create | Validates password strength, checks email uniqueness, sets default role, hashes password (if implemented) |
-| `sync_user_to_crm` | `User` form on create | Creates corresponding contact in Zoho CRM |
-| `status&calcul` | `Reservation` form on create | Sets `Status = 'En attente'`, computes `Duration_Text`, calculates amounts, sets `Advance_Amount`, `Payment_Deadline` |
-| `Check_Property_Availability` | `Reservation` form on create | Checks date conflicts; cancels reservation if overlap detected |
-| `auto_set_purchase_fields` | `Purchase` form on create | Sets `Status = 'En attente'`, computes `Advance_Amount`, sets `Payment_Deadline` |
-| `notify_seller_on_purchase` | `Purchase` form on create | Emails seller notification of new purchase request |
-| `generer_contrat_location` | `Reservation` on `Status = 'Confirmé'` | Creates a `Contract` record (rental contract) |
-| `generer_contrat_achat` | `Purchase` on `Statut = 'Accepté'` | Creates a `Contract` record (sale contract) |
-| `send_email_direct` (Custom API) | Called directly via Custom API URL | Sends verification email (to_email, to_name, verify_link) |
+Zoho Creator is the **single source of truth** for all platform data. It serves as:
+- A **low-code relational database** (Forms = tables, Reports = views/queries).
+- A **workflow engine** via Deluge scripting (server-side business logic triggered on record events).
+- A **REST API provider** (the Node.js proxy layer exclusively reads from and writes to it).
+
+No data is stored persistently in Node.js beyond the in-memory session and short-lived caches.
+
+### 17.2 Database Schema (Forms / Reports)
+
+| Zoho Creator Form | Equivalent Table | Key Fields |
+|-------------------|-----------------|------------|
+| `User` | Users | `full_name` (first+last), `Email`, `Phone_Number`, `Password`, `Role`, `Reset_Token`, `Reset_Token_Expiry` |
+| `Property` | Properties | `title`, `description`, `Price1`, `prix_nuit`, `loyer_mensuel`, `caution_courte`, `caution_longue`, `type_field`, `location`, `Surface1`, `Rooms1`, `Bathrooms1`, `Floor`, `Year_Built`, `Validation_Status`, `User` (lookup → User) |
+| `Reservation` | Reservations | `User` (lookup), `Property1` (lookup), `Start_Date`, `End_Date`, `Status`, `Duration_Text`, `Advance_Amount`, `Payment_Deadline`, `Advance_Payment_Status` |
+| `Purchase` | Purchases | `Buyer` (lookup), `Property` (lookup), `Seller` (lookup), `Request_Date`, `Statut`, `Advance_Amount`, `Payment_Deadline`, `Advance_Payment_Status`, `Preference_de_contact`, `Message` |
+| `Contract` | Contracts | `Buyer` (lookup), `Reservation` (lookup), `Purchase` (lookup), `Property` (lookup), `Contrat_PDF_URL`, `Signing_Status` |
+| `Payment` | Payments | `Contract` (lookup), `User` (lookup), `Amount`, `Zoho_Books_Invoice_ID` |
+
+**Reports used by Node.js (read-only):**
+
+| Report Name | Displays |
+|-------------|----------|
+| `All_Users` | All user records |
+| `All_Properties` | All property records |
+| `All_Reservations` | All reservation records |
+| `All_Purchases` | All purchase request records |
+| `All_Contracts` | All generated contracts |
+| `All_Payments` | All payment schedule records |
+
+### 17.3 Deluge Workflows
+
+All business logic resides here. Node.js never replicates workflow logic.
+
+| Workflow Name | Trigger (Form / Event) | What It Does |
+|---------------|------------------------|--------------|
+| `Add_User` | `User` form — on create | Validates password strength, checks email uniqueness, assigns default role, optionally syncs to CRM |
+| `sync_user_to_crm` | `User` form — on create | Creates a corresponding contact record in Zoho CRM |
+| `status&calcul` | `Reservation` form — on create | Sets `Status = 'En attente'`, computes `Duration_Text`, calculates rental amounts, sets `Advance_Amount` and `Payment_Deadline` |
+| `Check_Property_Availability` | `Reservation` form — on create | Detects date conflicts with existing reservations; cancels new reservation if overlap found |
+| `auto_set_purchase_fields` | `Purchase` form — on create | Sets `Statut = 'En attente'`, computes `Advance_Amount`, sets `Payment_Deadline` |
+| `notify_seller_on_purchase` | `Purchase` form — on create | Sends email notification to the seller about the new purchase request |
+| `generer_contrat_location` | `Reservation` — on `Status` changed to `'Confirmé'` | Creates a `Contract` record for the rental; generates PDF via Zoho Sign |
+| `generer_contrat_achat` | `Purchase` — on `Statut` changed to `'Accepté'` | Creates a `Contract` record for the sale; generates PDF via Zoho Sign |
+| `send_email_direct` (Custom API) | Called via Zoho Creator Custom API endpoint | Sends verification email with token link (to_email, to_name, verify_link) |
+
+### 17.4 Custom API Endpoint
+
+Zoho Creator exposes a custom API function used for email delivery:
+
+```
+POST https://www.zohoapis.com/creator/custom/2demonexflow/send_email_direct?publickey=<KEY>
+Form fields: to_email, to_name, verify_link
+```
+
+Called by Node.js in `sendVerificationEmailViaCreator()` during both signup and resend-verification flows. Uses a public key (no OAuth required).
 
 ---
 
-## 18. Frontend Pages Reference
+## 18. Zoho Sign — Contract Signing & Documents
+
+### 18.1 Role in the Platform
+
+Zoho Sign is the **e-signature and PDF generation service** for the platform. It is responsible for:
+- Generating the contract PDF once a reservation or purchase is confirmed.
+- Routing the document to the relevant parties (buyer, owner) for electronic signature.
+- Hosting the signed PDF and providing a download URL.
+- Updating the contract's signing status upon completion.
+
+### 18.2 Integration Flow
+
+```
+Advance Payment confirmed (Node.js PATCH)
+        ↓
+Zoho Creator workflow fires
+  (generer_contrat_location or generer_contrat_achat)
+        ↓
+Zoho Creator creates Contract record
+  + triggers Zoho Sign document request
+        ↓
+Zoho Sign generates PDF, sends to signatories
+        ↓
+Signatories sign electronically
+        ↓
+Zoho Sign marks document as fully signed
+        ↓
+Zoho Flow automation updates Contract.Signing_Status = 'Signé'
+        ↓
+Node.js /api/contracts/user returns updated contract
+  with Contrat_PDF_URL pointing to signed PDF
+```
+
+### 18.3 PDF Download (Node.js Proxy)
+
+**Endpoint:** `GET /api/contracts/pdf-download?url=<zoho-sign-url>&id=<contractId>`
+
+Because Zoho Sign PDFs require an authenticated token to access, Node.js acts as a proxy:
+1. Receives the Zoho Sign PDF URL from the frontend.
+2. Fetches it server-side using `Authorization: Bearer <ZOHO_ACCESS_TOKEN>`.
+3. Streams the response back to the browser as `Content-Disposition: attachment; filename="contrat-<id>.pdf"`.
+
+This allows the user to download their contract without exposing the OAuth token to the browser.
+
+### 18.4 Contract Record Fields (Zoho Creator side)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Contrat_PDF_URL` | URL | Zoho Sign hosted PDF URL |
+| `Signing_Status` | Dropdown | `En attente de signature` → `Signé` |
+| `Buyer` | Lookup → User | Tenant or buyer |
+| `Reservation` | Lookup → Reservation | Links to rental source (if applicable) |
+| `Purchase` | Lookup → Purchase | Links to sale source (if applicable) |
+
+---
+
+## 19. Zoho Flow — Automated Status Updates
+
+### 19.1 Role in the Platform
+
+Zoho Flow is the **inter-application automation layer**. It listens to events from Zoho Sign and propagates them back to Zoho Creator without requiring any code in Node.js.
+
+### 19.2 Key Flow: Contract Signed → Status Update
+
+**Trigger:** Zoho Sign — Document status changes to "Completed" (all parties have signed).
+
+**Action chain:**
+
+```
+[Zoho Sign] Document fully signed
+        ↓  (webhook / Zoho Flow trigger)
+[Zoho Flow] Receives completion event with document metadata
+        ↓
+[Zoho Flow] Identifies matching Contract record in Zoho Creator
+            (by document name, reference ID, or custom field)
+        ↓
+[Zoho Flow] Updates Zoho Creator:
+            Contract.Signing_Status = 'Signé'
+        ↓
+[Optional] Zoho Flow notifies buyer/owner via email or SMS
+```
+
+**Result visible in platform:** When the user visits `user_contracts.html`, the contract row shows status **"Signé"** and the download button links to the finalized PDF from Zoho Sign.
+
+### 19.3 Why Zoho Flow (Not a Zoho Creator Workflow)
+
+Zoho Creator Deluge workflows can only react to events **within** Zoho Creator. Since the signing completion event originates in **Zoho Sign** (a separate Zoho product), a cross-application automation tool is required. Zoho Flow bridges the two products without custom code.
+
+### 19.4 Additional Flows (Potential)
+
+| Flow | Trigger | Action |
+|------|---------|--------|
+| Contract signed notification | Zoho Sign: document completed | Send congratulations email to buyer via Zoho Mail |
+| Payment reminder | Scheduled: payment due date - 3 days | Send reminder email to buyer |
+| Property sold status | Contract signed + Purchase type | Update Property status to "Sold" in Zoho Creator |
+
+---
+
+## 20. Zoho Analytics — Admin Dashboards & Charts
+
+### 20.1 Role in the Platform
+
+Zoho Analytics is the **business intelligence and reporting layer**. It connects to Zoho Creator as a data source, builds dashboards and charts, and makes them available as embeddable views on the admin panel.
+
+### 20.2 Integration with the Platform
+
+The admin dashboard (`admin_dashboard.html`) embeds a Zoho Analytics public dashboard via iframe or redirect. The public dashboard URL is stored in:
+- Environment variable: `ZOHO_ANALYTICS_DASHBOARD_URL`
+- Fallback hardcoded URL: `https://analytics.zoho.com/open-view/3208169000000460126/...`
+
+The Node.js chatbot endpoint returns this URL when the admin requests a chart via Nexia (`[ACTION:SHOW_CHART:type]`).
+
+### 20.3 Available Chart Categories
+
+The chatbot recognizes and maps the following chart types to the analytics dashboard:
+
+| Chatbot Keyword | Dashboard Section | Content |
+|-----------------|-------------------|---------|
+| `proprietes` | Properties chart | Property distribution by type (For Sale / To Rent), validation status breakdown |
+| `utilisateurs` | Users chart | Registered users count, role distribution |
+| `reservations` | Reservations & purchases | Volume over time, status distribution |
+| `contrats` | Contracts chart | Contracts by type (rental/sale), signing status |
+| `dashboard` (default) | Full analytics board | All KPIs combined — the complete admin view |
+
+### 20.4 Data Source
+
+Zoho Analytics synchronizes data from Zoho Creator reports:
+- `All_Properties` → property metrics
+- `All_Users` → user metrics
+- `All_Reservations` + `All_Purchases` → transaction metrics
+- `All_Contracts` + `All_Payments` → financial metrics
+
+Synchronization is configured in Zoho Analytics (scheduled or on-demand refresh).
+
+### 20.5 Access Control
+
+The dashboard URL used in the platform is a **public view link** (no login required to view it). This is intentional to allow iframe embedding. Sensitive data at field level should be excluded from this view when configuring the Zoho Analytics public link.
+
+---
+
+## 21. Zoho API Console — OAuth & Data Integration
+
+### 21.1 Role in the Platform
+
+The **Zoho API Console** (`api-console.zoho.com`) is the developer portal where:
+1. The OAuth 2.0 client application is registered.
+2. API scopes (permissions) are configured.
+3. The initial `refresh_token` is obtained (used by Node.js indefinitely for token rotation).
+4. The connection between the local Node.js server and the Zoho Creator cloud database is established.
+
+### 21.2 OAuth Credential Setup
+
+**Steps performed once in Zoho API Console:**
+
+```
+1. Create a "Self Client" application in api-console.zoho.com
+2. Select product: Zoho Creator
+3. Configure scopes (see §21.3)
+4. Generate authorization code (one-time)
+5. Exchange for refresh_token via POST to accounts.zoho.com/oauth/v2/token
+6. Store refresh_token in .env as ZOHO_REFRESH_TOKEN
+```
+
+Node.js then uses the refresh token permanently:
+- On startup: calls `refreshAccessToken()` to get an `access_token`.
+- During runtime: auto-refreshes when the token is < 2 minutes from expiry (1-hour TTL).
+- On 401/403 from Zoho: triggers an immediate refresh before retrying.
+
+### 21.3 Required OAuth Scopes
+
+| Scope | Purpose |
+|-------|---------|
+| `ZohoCreator.form.CREATE` | Create records (User, Property, Reservation, Purchase) |
+| `ZohoCreator.report.READ` | Read data from all reports (All_Users, All_Properties, etc.) |
+| `ZohoCreator.report.UPDATE` | PATCH records (advance payment, cancel, profile update, validation status) |
+| `ZohoCreator.report.DELETE` | Delete user and property records (admin actions) |
+| `ZohoCreator.report.file.READ` | Download image/file fields from records |
+| `ZohoCreator.report.file.CREATE` | Upload property images to image fields |
+| `ZohoCreator.customapi.EXECUTE` | Call the `send_email_direct` Custom API endpoint |
+| `ZohoBooks.invoices.READ` | Fetch invoice details for payment tracking |
+
+### 21.4 Data Flow: Local ↔ Zoho
+
+```
+                    Node.js (api-proxy.js)
+                           │
+          ┌────────────────┼────────────────┐
+          │                │                │
+     WRITE (POST)    READ (GET)       UPDATE (PATCH)
+          │                │                │
+    Zoho Creator     Zoho Creator     Zoho Creator
+    /form/User       /report/...      /report/.../:id
+    /form/Property   All_Users        All_Reservations
+    /form/Reservation All_Properties  All_Purchases
+    /form/Purchase   All_Contracts    All_Users
+                     All_Payments     All_Properties
+```
+
+**Image data flow:**
+```
+Browser (base64 data URI)
+        ↓ POST /api/properties/create
+Node.js decodes + saves to /uploads/property-<ID>.<ext>
+        ↓ Parallel
+Node.js uploads to Zoho Creator image field
+        via /report/All_Properties/:id/<field>/upload
+```
+
+### 21.5 Token Refresh Configuration in .env
+
+```
+ZOHO_CLIENT_ID=<from API Console>
+ZOHO_CLIENT_SECRET=<from API Console>
+ZOHO_REFRESH_TOKEN=<generated once via API Console>
+ZOHO_API_DOMAIN=www.zohoapis.com
+ZOHO_ACCOUNTS_DOMAIN=accounts.zoho.com
+```
+
+The `ZOHO_ACCESS_TOKEN` variable is optional in `.env` — Node.js overwrites it in memory on every refresh. Setting it is only useful as a warm-start optimization.
+
+### 21.6 Multi-Base URL Fallback (Resilience)
+
+The API Console registers credentials that work across three Zoho Creator base URLs. Node.js tries them in order on every call, providing automatic resilience against endpoint deprecation or regional routing changes:
+
+| Base | Auth format |
+|------|-------------|
+| `https://www.zohoapis.com/creator/v2.1/...` | `Zoho-oauthtoken <token>` |
+| `https://creator.zoho.com/api/v2/...` | `Bearer <token>` |
+| `https://creatorapp.zoho.com/api/v2/...` | `Bearer <token>` |
+
+---
+
+## 22. Frontend Pages Reference
 
 ### 18.1 Public Pages (unauthenticated)
 
@@ -914,9 +1196,9 @@ All workflows are Deluge scripts configured inside Zoho Creator. Node.js **never
 
 ---
 
-## 19. Non-Functional Requirements
+## 23. Non-Functional Requirements
 
-### 19.1 Security
+### 23.1 Security
 
 | Requirement | Implementation |
 |-------------|----------------|
@@ -929,7 +1211,7 @@ All workflows are Deluge scripts configured inside Zoho Creator. Node.js **never
 | Role-based endpoint protection | Client-side only for admin endpoints (gap — should add server-side middleware) |
 | Password storage | Plain text in Zoho Creator (gap — should hash via Deluge workflow) |
 
-### 19.2 Performance
+### 23.2 Performance
 
 | Requirement | Implementation |
 |-------------|----------------|
@@ -940,7 +1222,7 @@ All workflows are Deluge scripts configured inside Zoho Creator. Node.js **never
 | Request deduplication | `fetchZohoJsonDeduped()` — simultaneous identical GET requests share one in-flight promise |
 | OAuth token reuse | Token refreshed only when < 2 minutes from expiry; cooldown if Zoho returns 429 |
 
-### 19.3 Availability
+### 23.3 Availability
 
 | Requirement | Implementation |
 |-------------|----------------|
@@ -950,7 +1232,7 @@ All workflows are Deluge scripts configured inside Zoho Creator. Node.js **never
 | Offline detection | `isOfflineError()` — skips retry on DNS/connection errors |
 | Startup token validation | OAuth token refreshed on server start; fails loudly if refresh token is invalid |
 
-### 19.4 Reliability
+### 23.4 Reliability
 
 | Requirement | Implementation |
 |-------------|----------------|
@@ -959,14 +1241,14 @@ All workflows are Deluge scripts configured inside Zoho Creator. Node.js **never
 | Port conflict detection | `EADDRINUSE` handler with clear error message |
 | Pending signup cleanup | Interval every 1 hour deletes expired pending signup tokens |
 
-### 19.5 Scalability Limitations
+### 23.5 Scalability Limitations
 
 - **In-memory state** (`pendingSignups`, caches, OAuth token) is process-local. Running multiple Node.js instances requires an external store (Redis) for session + cache + pending signups.
 - **Max 200 Zoho records** per report fetch — pagination not implemented.
 
 ---
 
-## 20. Technical Stack
+## 24. Technical Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -979,16 +1261,19 @@ All workflows are Deluge scripts configured inside Zoho Creator. Node.js **never
 | Compression | `compression` |
 | File uploads | `form-data`, `fs` (local `/uploads/` directory) |
 | AI / Chatbot | Groq Cloud API — LLaMA 3.1 8B Instant |
-| Backend data | Zoho Creator (low-code database + Deluge workflows) |
-| CRM | Zoho CRM (synced via Zoho workflow) |
-| Invoicing | Zoho Books |
-| Analytics | Zoho Analytics (embedded iframe dashboard) |
+| Backend data | **Zoho Creator** — low-code database (Forms/Reports) + Deluge workflow engine (§17) |
+| E-signature & contracts | **Zoho Sign** — PDF generation, e-signature routing, signed document hosting (§18) |
+| Cross-app automation | **Zoho Flow** — listens to Zoho Sign completion, updates Contract status in Zoho Creator (§19) |
+| Business intelligence | **Zoho Analytics** — embedded charts and KPI dashboards in admin panel (§20) |
+| OAuth / API bridge | **Zoho API Console** — credential registration, scope management, refresh_token issuance (§21) |
+| CRM | Zoho CRM (synced via `sync_user_to_crm` Deluge workflow on user creation) |
+| Invoicing | Zoho Books (invoice lookup via `Zoho_Books_Invoice_ID` field) |
 | Frontend | Vanilla HTML/CSS/JavaScript (no framework) |
 | Styling | Custom CSS (`styles.css`, `styles_agent.css`, inline) |
 
 ---
 
-## 21. Environment Configuration
+## 25. Environment Configuration
 
 All runtime parameters are loaded from `.env` via `loadEnvFile()`.
 
